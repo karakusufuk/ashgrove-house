@@ -92,6 +92,18 @@ addEventListener('scroll', rq, { passive: true });
 addEventListener('resize', rq);
 addEventListener('load', rq);
 
+/* ---------- photo panel swap: the new photo is decoded before it fades in, so the old one never shows through ---------- */
+export function swapPh(a, b, front, src, alt) {
+  const show = front === 'A' ? b : a, hide = front === 'A' ? a : b;
+  if (hide.getAttribute('src') === src && +hide.style.opacity !== 0) return front;
+  show.style.opacity = 0; show.src = src; show.alt = alt;
+  (show.decode ? show.decode() : Promise.resolve()).catch(() => {}).then(() => {
+    if (show.getAttribute('src') !== src) return;
+    show.style.opacity = 1; hide.style.opacity = 0;
+  });
+  return front === 'A' ? 'B' : 'A';
+}
+
 /* ---------- boot ---------- */
 paintIcons();
 reveal();

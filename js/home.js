@@ -1,5 +1,5 @@
 // Home: intro, hero film, hero headline fit, "Next" line.
-import { $, $$, drawLogo, reducedMotion } from './site.js';
+import { $, $$, drawLogo, reducedMotion, swapPh } from './site.js';
 import { W, lbl, rng, TC, PHOTO, pp, rl, eur, DIM } from './data.js';
 import { registerHost, absY } from './paced.js';
 
@@ -75,17 +75,6 @@ function setCalLab(w) {
   const l = $('#calLab');
   l.style.setProperty('--c', TC[w.main]);
   l.innerHTML = `<i></i><b>${w.long ? 'Bank holiday · ' : ''}${lbl(w)}</b><span>${rng(w)}</span>`;
-}
-// the new photo is decoded before it fades in, so the old one never shows through
-export function swapPh(a, b, front, src, alt) {
-  const show = front === 'A' ? b : a, hide = front === 'A' ? a : b;
-  if (hide.getAttribute('src') === src && +hide.style.opacity !== 0) return front;
-  show.style.opacity = 0; show.src = src; show.alt = alt;
-  (show.decode ? show.decode() : Promise.resolve()).catch(() => {}).then(() => {
-    if (show.getAttribute('src') !== src) return;
-    show.style.opacity = 1; hide.style.opacity = 0;
-  });
-  return front === 'A' ? 'B' : 'A';
 }
 function setCalPhoto(w) { setCalLab(w); calFront = swapPh($('#calA'), $('#calB'), calFront, `images/${PHOTO[w.main]}.jpg`, lbl(w)); }
 function renderGuide() {
