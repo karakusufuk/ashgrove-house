@@ -1,6 +1,7 @@
 // Home: intro, hero film, hero headline fit, "Next" line.
 import { $, $$, drawLogo, reducedMotion } from './site.js';
 import { W, lbl, rng, TC, PHOTO, pp, rl, eur } from './data.js';
+import { registerHost, absY } from './paced.js';
 
 const vid = $('#heroVid');
 const root = document.documentElement;
@@ -105,3 +106,57 @@ $('#calA').src = `images/${PHOTO[W[0].main]}.jpg`;
 $('#calA').alt = lbl(W[0]);
 setCalLab(W[0]);
 renderGuide();
+
+/* ---------- story: the weekend as a timeline ---------- */
+const MOM = [
+  { day: 'Friday', h: '16:00', title: 'Arrival', txt: 'Bags down, keys on the table, a first drink in the drawing room.', img: 'story-01-arrival' },
+  { day: 'Friday', h: '21:00', title: 'Latin night', txt: 'Orquesta Brava in The Coach House. Nobody sits for long.', img: 'story-02-latin-night' },
+  { day: 'Saturday', h: '09:00', title: 'Breakfast', txt: 'Brown bread, local honey, eggs any way you like.', img: 'story-03-breakfast' },
+  { day: 'Saturday', h: '10:30', title: 'Yoga', txt: 'A slow class on the lawn, the abbey behind the trees.', img: 'story-04-yoga' },
+  { day: 'Saturday', h: '14:00', title: 'Spa', txt: 'One session in the orangery is in the package.', img: 'story-05-spa' },
+  { day: 'Saturday', h: '19:30', title: 'Dinner', txt: 'One long table. The menu follows the night’s theme.', img: 'story-06-dinner' },
+  { day: 'Saturday', h: '22:00', title: 'The party', txt: 'DJ Marisol on the terrace until the last song.', img: 'story-07-party' },
+  { day: 'Sunday', h: '11:00', title: 'Goodbye', txt: 'A late breakfast, then home.', img: 'story-08-goodbye' },
+];
+const DIM = { 'story-01-arrival':[1536,1024], 'story-02-latin-night':[1536,1024], 'story-03-breakfast':[1374,1145], 'story-04-yoga':[1536,1024], 'story-05-spa':[1536,1024], 'story-06-dinner':[1536,1024], 'story-07-party':[1536,1024], 'story-08-goodbye':[1536,1024] };
+const story = $('#story'), tl = $('#tl'), tlCol = $('#tlCol'), PER = 46;
+tlCol.innerHTML = '<div class="tl-line"></div>' + MOM.map((m, k) => `<div class="tl-it" style="--k:${k}"><span class="tl-node"></span><h3 class="d">${m.title}</h3></div>`).join('');
+$('#stPh').innerHTML = MOM.map(m => `<img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async">`).join('');
+const its = $$('.tl-it'), phs = $$('#stPh img');
+story.style.height = `calc(${MOM.length * PER}vh + 100vh)`;
+let cur = -1, tlY = 190, tlS = 240;
+function layoutStory() {
+  const h = its[0].querySelector('.d').offsetHeight; if (!h) return;
+  tlS = Math.round(h + 140); tlY = Math.round(tlS - h / 2);
+  const H = Math.round(tlY + tlS + h * .3), R = document.documentElement.style;
+  R.setProperty('--tlTH', h + 'px'); R.setProperty('--tlS', tlS + 'px'); R.setProperty('--tlY', tlY + 'px'); R.setProperty('--tlH', H + 'px');
+  R.setProperty('--phW', Math.min((H - 58) * 4 / 3, tl.clientWidth - 24) + 'px');
+  tlCol.style.setProperty('--tlShift', (tlY - Math.max(cur, 0) * tlS) + 'px');
+}
+/* every step: day, time and copy go out completely; the title settles first (.85 s), then day and time return, then the copy */
+let txT = [];
+function storyText(m, first) {
+  const d = $('#tlDay'), t = $('#tlTime'), x = $('#tlTxt');
+  txT.forEach(clearTimeout); txT = [];
+  if (first || reducedMotion()) { d.textContent = m.day; t.textContent = m.h; x.textContent = m.txt; [d, t, x].forEach(e => e.classList.remove('out')); return; }
+  [d, t, x].forEach(e => e.classList.add('out'));
+  txT.push(setTimeout(() => { d.textContent = m.day; t.textContent = m.h; d.classList.remove('out'); t.classList.remove('out'); }, 850));
+  txT.push(setTimeout(() => { x.textContent = m.txt; x.classList.remove('out'); }, 1150));
+}
+function storyStep() {
+  const r = story.getBoundingClientRect(), total = story.offsetHeight - innerHeight;
+  const i = Math.min(MOM.length - 1, Math.floor(Math.min(Math.max(-r.top / total, 0), .9999) * MOM.length));
+  if (i === cur) return;
+  const first = cur < 0; cur = i;
+  tlCol.style.setProperty('--tlShift', (tlY - i * tlS) + 'px');
+  its.forEach((it, k) => { it.classList.toggle('on', k === i); it.classList.toggle('past', k < i); });
+  phs.forEach((p, k) => p.classList.toggle('on', k === i));
+  storyText(MOM[i], first);
+}
+const stepTop = i => { const len = (story.offsetHeight - innerHeight) / MOM.length; return Math.round(absY(story) + len * (i + .5)); };
+registerHost({ el: story, n: MOM.length, pos: stepTop, down: () => ({ y: absY(story) + story.offsetHeight, host: null }), up: () => ({ y: 0, host: null }) });
+addEventListener('resize', layoutStory);
+let stk = 0;
+addEventListener('scroll', () => { if (!stk) { stk = 1; requestAnimationFrame(() => { storyStep(); stk = 0; }); } }, { passive: true });
+layoutStory(); storyStep();
+if (document.fonts) document.fonts.ready.then(() => { layoutStory(); storyStep(); });
