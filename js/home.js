@@ -1,6 +1,6 @@
 // Home: intro, hero film, hero headline fit, "Next" line.
 import { $, $$, drawLogo, reducedMotion } from './site.js';
-import { W, lbl, rng, TC, PHOTO, pp, rl, eur } from './data.js';
+import { W, lbl, rng, TC, PHOTO, pp, rl, eur, DIM } from './data.js';
 import { registerHost, absY } from './paced.js';
 
 const vid = $('#heroVid');
@@ -118,7 +118,6 @@ const MOM = [
   { day: 'Saturday', h: '22:00', title: 'The party', txt: 'DJ Marisol on the terrace until the last song.', img: 'story-07-party' },
   { day: 'Sunday', h: '11:00', title: 'Goodbye', txt: 'A late breakfast, then home.', img: 'story-08-goodbye' },
 ];
-const DIM = { 'story-01-arrival':[1536,1024], 'story-02-latin-night':[1536,1024], 'story-03-breakfast':[1374,1145], 'story-04-yoga':[1536,1024], 'story-05-spa':[1536,1024], 'story-06-dinner':[1536,1024], 'story-07-party':[1536,1024], 'story-08-goodbye':[1536,1024] };
 const story = $('#story'), tl = $('#tl'), tlCol = $('#tlCol'), PER = 46;
 tlCol.innerHTML = '<div class="tl-line"></div>' + MOM.map((m, k) => `<div class="tl-it" style="--k:${k}"><span class="tl-node"></span><h3 class="d">${m.title}</h3></div>`).join('');
 $('#stPh').innerHTML = MOM.map(m => `<img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async">`).join('');
