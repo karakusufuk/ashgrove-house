@@ -78,14 +78,47 @@ footer{background:var(--soft);padding-block:80px 40px;border-top:1px solid var(-
 .toast{position:fixed;left:50%;top:100px;transform:translate(-50%,-10px);z-index:350;background:#fff;color:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.15);padding:12px 18px;font-size:14px;font-weight:600;opacity:0;transition:.25s;pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
+/* ========== HOME ========== */
+/* intro: black ~1s, the frame opens to the 35mm picture, then the page arrives (only when the head script sets .intro-on) */
+.intro{display:none;position:fixed;inset:0;z-index:300;pointer-events:none}
+.intro-on .intro{display:block}
+.intro .ip{position:absolute;left:0;right:0;height:50%;background:#000;transition:height 1.8s cubic-bezier(.65,0,.35,1),opacity .9s ease}
+.intro .ip.t{top:0}.intro .ip.b{bottom:0}
+.intro .ip.l,.intro .ip.r{top:0;bottom:0;height:auto;width:0;transition:opacity .9s ease}
+.intro .ip.l{left:0;right:auto}.intro .ip.r{right:0;left:auto}
+.intro .lo{position:absolute;inset:0;display:grid;place-items:center;z-index:2;transition:opacity .5s}
+.intro .lo div{display:flex;flex-direction:column;align-items:center;gap:18px}
+.intro .lo b{font-family:var(--logo);font-weight:600;font-size:16px;letter-spacing:.36em;color:#e8e8e8}
+.intro .lo i{display:block;width:150px;height:1px;background:rgba(255,255,255,.14);overflow:hidden}
+.intro .lo i span{display:block;height:100%;background:#e8e8e8;transform:translateX(-100%);animation:ld 1s ease forwards}
+@keyframes ld{to{transform:none}}
+.intro.go .lo{opacity:0}
+.intro.fade .ip{opacity:0}
+.intro-on .intro.done,.intro.done{display:none}
+
+.hero{padding-top:calc(var(--hh) + 28px);padding-bottom:96px}
+.hero .wrap{container-type:inline-size}
+.hero-frame{height:clamp(280px,calc(100vh - 372px),560px);overflow:hidden;background:#e9e9e7}
+.hero-frame video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+/* the headline fills the frame on one line: sized in CSS from the Anton width ratio (so nothing shifts when the font arrives), then refined by js/home.js */
+.hero h1{--hw:1126;font-size:min(150px,calc(100cqw * 100 / var(--hw) - .2px));margin:34px 0 24px;width:max-content}
+.hero-sub{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px;align-items:center}
+.hero-sub .acts{display:flex;align-items:center;gap:26px;justify-self:end}
+.next{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted);white-space:nowrap}
+.next i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--latin))}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{transform:none}.js .hdr .logo svg path{stroke-dashoffset:0}}
 @media (max-width:900px){
+  .hero h1{width:auto;font-size:clamp(46px,6.2vw,90px)}
+  .hero-sub{grid-template-columns:1fr}
   .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   .d{white-space:normal}
   .f-g{grid-template-columns:1fr}
   .nav a{padding:0 12px}
 }
 @media (max-width:520px){
+  .hero-sub .acts{flex-direction:column;align-items:flex-start;justify-self:start}
+  .next{white-space:normal}
   .logo b{font-size:12px;letter-spacing:.22em}
   .nav a[data-nav="restaurant"]{display:none}
   .nav a{height:34px;font-size:13px}
