@@ -1,7 +1,8 @@
 // Rooms: the date strip (weekends + weeknights), the house plan with booked rooms hatched, the hover card.
-// The drawer (right column) is built in js/drawer.js (Stage 9).
+// The drawer (right column) is js/drawer.js; the room brochure bands use js/bands.js.
 import { $, $$, toast } from './site.js';
 import { W, TC, rng, ROOMS, TYP, roomById, roomTaken, priceLine, iso, add, today, fromIso, isWeekendNight } from './data.js';
+import { mountBands } from './bands.js';
 
 export const sel = { w: null, start: null, n: 2 };          // the chosen dates: a weekend number, or a weeknight check-in + nights
 export const selection = () => sel.w ? { w: sel.w } : sel.start ? { start: sel.start, n: sel.n } : null;
@@ -67,3 +68,11 @@ const q = +new URLSearchParams(location.search).get('w');
 if (q >= 1 && q <= W.length) sel.w = q;
 buildPlan();
 applyDates();
+
+/* ---------- room brochure bands ---------- */
+mountBands($('#roomBands'), [
+  { eyebrow: 'The quietest rooms', title: 'The suites', lead: 'More space at the abbey end of the house. Super-king beds, a sitting room each, and the ruin through the window.', facts: [['guests', '1–2', 'guests'], ['ticket', '€549', 'per person, weekend'], ['night', '€320', 'per night, weekdays'], ['meter', 'Quiet', 'far from the party']], p1: 'room-suite-1', p2: 'room-suite-2' },
+  { eyebrow: 'In the main house', title: 'Standard doubles', lead: 'Hazel 1–4 look over the walled garden. Hazel 5–8 face the courtyard and hear a little more of the night.', facts: [['guests', '1–2', 'guests'], ['ticket', '€389', 'per person, weekend'], ['night', '€180', 'per night, weekdays'], ['meter', 'Quiet or medium', 'by side of the house']], p1: 'room-standard-1', p2: 'room-standard-2', alt: 1, rev: 1 },
+  { eyebrow: 'In the old stable yard', title: 'Garden rooms', lead: 'Six rooms for up to three around the cobbled yard. Stone walls, oak beams, your own door, and The Coach House a few steps away.', facts: [['guests', '1–3', 'guests'], ['ticket', '€329', 'per person, weekend'], ['night', '€210', 'per night, weekdays'], ['meter', 'Lively', 'next to the party']], p1: 'room-garden-1', p2: 'room-garden-2' },
+]);
+import('./drawer.js');
