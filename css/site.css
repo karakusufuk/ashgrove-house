@@ -79,6 +79,7 @@ footer{background:var(--soft);padding-block:80px 40px;border-top:1px solid var(-
 @keyframes kb2{from{transform:scale(1.07)}to{transform:scale(1)}}
 
 /* brochure band: tall, pinned, one large photo that gives way to the second */
+@media (min-width:901px){#roomBands,#spaBands,#restBands{min-height:600vh}#corpBands{min-height:400vh}}   /* the containers hold their final height before the bands are built: no layout shift on load */
 .band{position:relative;height:200vh}
 .band.alt{background:var(--soft)}
 .band-pin{position:sticky;top:0;height:100vh;padding-top:var(--hh);display:flex;align-items:center}

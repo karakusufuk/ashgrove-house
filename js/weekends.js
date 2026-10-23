@@ -15,7 +15,7 @@ $$('.ft').forEach(b => b.addEventListener('click', () => toggle(act.t, b.dataset
 function card(w, i) {
   const sold = !w.rooms, ph = PHOTO[w.main];
   const out = w.out === 'closed' ? `<span class="closed">${ico('ticket')}Closed to outside guests</span>` : w.out === 'sat' ? `<span class="closed">${ico('ticket')}Saturday closed, group booking</span>` : `<span>${ico('ticket')}Open to outside guests</span>`;
-  return `<article class="card" data-w="${w.n}"><div class="cph"><img src="../images/${ph}.jpg" alt="${lbl(w)}" width="${DIM[ph][0]}" height="${DIM[ph][1]}"${i > 1 ? ' loading="lazy"' : ''}></div>
+  return `<article class="card" data-w="${w.n}"><div class="cph"><img src="../images/${ph}.jpg" alt="${lbl(w)}" width="${DIM[ph][0]}" height="${DIM[ph][1]}" loading="lazy"></div>
  <div class="cmain"><div class="small">${weekendDates(w)}</div>
   <h3 class="ct">${w.long ? 'Bank holiday long weekend' : lbl(w)}</h3><p class="desc">${w.desc}</p>
   <div class="nb" style="--n:${w.nights.length}">${w.nights.map(([d, x]) => `<div class="nbx" style="--c:${TC[x.t]}"><div class="small">${d} night</div><b>${x.name}</b><span>${x.act}</span></div>`).join('')}</div>

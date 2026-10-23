@@ -104,6 +104,19 @@ export function swapPh(a, b, front, src, alt) {
   return front === 'A' ? 'B' : 'A';
 }
 
+/* ---------- fonts before the first paint ----------
+   The page scripts are render-blocking, so waiting here (at most 1 s) means the first paint normally already uses Anton,
+   Manrope and Outfit instead of painting in the fallback fonts and shifting when they arrive; on a slow connection the page
+   paints with the fallbacks after a second and swaps, as the board does. */
+if (document.fonts && document.fonts.load) {
+  const sheet = document.querySelector('link[rel="stylesheet"][href*="fonts.googleapis"]');
+  if (sheet && !sheet.sheet) await new Promise(r => { sheet.addEventListener('load', r, { once: true }); sheet.addEventListener('error', r, { once: true }); setTimeout(r, 800); });
+  await Promise.race([
+    Promise.all(['400 40px Anton', '400 16px Manrope', '600 16px Manrope', '700 16px Manrope', '800 16px Manrope', '600 16px Outfit'].map(f => document.fonts.load(f))).catch(() => {}),
+    new Promise(r => setTimeout(r, 1000)),
+  ]);
+}
+
 /* ---------- boot ---------- */
 paintIcons();
 reveal();
