@@ -39,7 +39,7 @@ function renderCards() {
 /* the filter band thins to half height on the way down and comes back on the way up.
    The height it gives up is added back as margin, so the cards below never jump. */
 const filters = $('#filters');
-let fLastY = 0;
+let fLastY = 0, fUp = 0;
 function measureF() {
   const c = filters.classList.contains('compact');
   filters.classList.add('nt');
@@ -53,8 +53,9 @@ function measureF() {
 function filtersScroll() {
   const y = scrollY, dy = y - fLastY; fLastY = y;
   const stuck = filters.getBoundingClientRect().top <= parseFloat(getComputedStyle(filters).top) + 1 && y > 0;
-  if (!stuck) { filters.classList.remove('compact'); return; }
-  if (dy > 6) filters.classList.add('compact'); else if (dy < -6) filters.classList.remove('compact');
+  if (!stuck) { filters.classList.remove('compact'); fUp = 0; return; }
+  if (dy > 6) { filters.classList.add('compact'); fUp = 0; }
+  else if (dy < 0) { fUp -= dy; if (fUp >= 40) { filters.classList.remove('compact'); fUp = 0; } }   // a deliberate upward scroll restores it; a trackpad's few-pixel jitter does not
 }
 let tk = 0;
 addEventListener('scroll', () => { if (!tk) { tk = 1; requestAnimationFrame(() => { filtersScroll(); tk = 0; }); } }, { passive: true });
