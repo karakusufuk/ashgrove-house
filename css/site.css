@@ -91,3 +91,12 @@ footer{background:var(--soft);padding-block:80px 40px;border-top:1px solid var(-
   .nav a{height:34px;font-size:13px}
   .navg>.btn{height:44px;padding:0 16px}
 }
+
+/* hidden /data-check/ page */
+.dc h2{font-family:var(--sans);font-weight:800;font-size:22px;letter-spacing:-.01em;margin:48px 0 12px}
+.dc h3{font-family:var(--sans);font-weight:700;font-size:16px;margin:24px 0 8px}
+.dc table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+.dc th,.dc td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.dc th{font-size:13px;color:var(--muted);font-weight:700}
+.dc .ok{color:#2f6a3a;font-weight:700}
+.dc .bad{color:#b3261e;font-weight:700}
