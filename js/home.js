@@ -1,6 +1,6 @@
 // Home: intro, hero film, hero headline fit, "Next" line.
-import { $, drawLogo, reducedMotion } from './site.js';
-import { W, lbl, rng, TC } from './data.js';
+import { $, $$, drawLogo, reducedMotion } from './site.js';
+import { W, lbl, rng, TC, PHOTO, pp, rl, eur } from './data.js';
 
 const vid = $('#heroVid');
 const root = document.documentElement;
@@ -66,3 +66,42 @@ intro();
 addEventListener('pageshow', e => {
   if (e.persisted) { drawLogo(); playHero(); }
 });
+
+/* ---------- upcoming weekends: one picture, three slim guide rows ---------- */
+let calCur = 1, calFront = 'A';
+Object.values(PHOTO).forEach(n => { const im = new Image(); im.src = `images/${n}.jpg`; });   // all theme photos preloaded
+function setCalLab(w) {
+  const l = $('#calLab');
+  l.style.setProperty('--c', TC[w.main]);
+  l.innerHTML = `<i></i><b>${w.long ? 'Bank holiday · ' : ''}${lbl(w)}</b><span>${rng(w)}</span>`;
+}
+// the new photo is decoded before it fades in, so the old one never shows through
+export function swapPh(a, b, front, src, alt) {
+  const show = front === 'A' ? b : a, hide = front === 'A' ? a : b;
+  if (hide.getAttribute('src') === src && +hide.style.opacity !== 0) return front;
+  show.style.opacity = 0; show.src = src; show.alt = alt;
+  (show.decode ? show.decode() : Promise.resolve()).catch(() => {}).then(() => {
+    if (show.getAttribute('src') !== src) return;
+    show.style.opacity = 1; hide.style.opacity = 0;
+  });
+  return front === 'A' ? 'B' : 'A';
+}
+function setCalPhoto(w) { setCalLab(w); calFront = swapPh($('#calA'), $('#calB'), calFront, `images/${PHOTO[w.main]}.jpg`, lbl(w)); }
+function renderGuide() {
+  $('#guide').innerHTML = W.slice(0, 3).map(w => `<a class="gr ${w.n === calCur ? 'cur' : ''}" data-w="${w.n}" href="rooms/?w=${w.n}" aria-label="${lbl(w)}, ${rng(w)}">
+  <div class="dt"><b>${rng(w)}</b><span>${w.long ? 'Bank holiday' : 'Weekend ' + w.n}</span></div>
+  <div class="ns">${w.nights.map(([d, x]) => `<div class="nt" style="--c:${TC[x.t]}"><i></i><div style="min-width:0"><b>${d} · ${x.name}</b><span>${x.act}</span></div></div>`).join('')}</div>
+  <div class="pr">from<b>${eur(pp(w, 'garden'))}</b></div>
+  <div class="lf ${w.rooms <= 2 ? 'hot' : ''}">${w.rooms ? rl(w.rooms) : 'Rooms sold out'}<br><span class="small">${w.out === 'closed' ? 'Closed to outside guests' : w.tix + ' evening tickets'}</span></div>
+  <div class="go">→</div></a>`).join('');
+  $$('.gr').forEach(r => {
+    const w = W[+r.dataset.w - 1];
+    const on = () => { calCur = w.n; $$('.gr').forEach(x => x.classList.toggle('cur', x === r)); setCalPhoto(w); };
+    r.addEventListener('mouseenter', on);
+    r.addEventListener('focus', on);
+  });
+}
+$('#calA').src = `images/${PHOTO[W[0].main]}.jpg`;
+$('#calA').alt = lbl(W[0]);
+setCalLab(W[0]);
+renderGuide();
