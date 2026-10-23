@@ -1,0 +1,11 @@
+/* Design tokens — taken from the approved board's :root */
+:root{
+  --ink:#1b1c1e; --ink2:#3b3d41; --muted:#707276; --faint:#a3a5a8; --line:#e7e7e5; --soft:#f5f5f3; --paper:#ffffff;
+  --rose:#d99d97; --rose-h:#e4b0ab; --rose-d:#a86a63; --rose-l:#f7e6e3; --on-rose:#2b1f1d;
+  --greek:#33609f; --latin:#6a3d98; --s90:#b8417f; --bingo:#d4703a; --white:#939aa1; --comedy:#3f7d7a; --acoustic:#6f8b62; --dj:#44607f;
+  --head:"Anton","Oswald","Arial Narrow",sans-serif;
+  --sans:"Manrope","Segoe UI",system-ui,sans-serif;
+  --logo:"Outfit","Manrope",system-ui,sans-serif;
+  --hh:84px; --r:12px; --sec:140px; --container:1360px; --gutter:40px;
+  color-scheme:light;
+}
