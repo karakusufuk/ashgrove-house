@@ -28,8 +28,13 @@ $$('.thr').forEach(r => {
   const k = +r.dataset.k;
   r.addEventListener('mouseenter', () => setTheme(k));
   r.addEventListener('focus', () => setTheme(k));
-  r.addEventListener('click', () => $('#corpBook').scrollIntoView({ behavior: 'smooth' }));
+  r.addEventListener('click', () => {
+    // ≤ 900 px a tap shows that night (photo and label) instead of jumping away; the link under the list goes to the quote
+    if (innerWidth <= 900) { setTheme(k); const ph = $('.thm-ph'), t = ph.getBoundingClientRect().top; if (t < 70) scrollBy({ top: t - 80, behavior: 'smooth' }); return; }
+    $('#corpBook').scrollIntoView({ behavior: 'smooth' });
+  });
 });
+$('#thmList').insertAdjacentHTML('afterend', '<a class="tlink thm-go" href="#corpBook">Request a quote for your theme →</a>');
 
 /* request a quote */
 stepper($('#corpBook'), {

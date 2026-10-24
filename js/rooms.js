@@ -22,8 +22,8 @@ let openRoom = () => {};                                 // set by the drawer mo
 export const setOpenRoom = fn => { openRoom = fn; };
 function buildPlan() {
   const pl = $('#plan');
-  pl.insertAdjacentHTML('beforeend', BL.map(b => `<div class="blk" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%"><span class="bl">${b.l}</span></div>`).join('') +
-    `<div class="blk" style="left:${120 / 9.85}%;top:${20 / 3.2}%;width:${85 / 9.85}%;height:${182 / 3.2}%;border:1.5px dashed #c4c6c8;background:transparent"><span class="bl" style="top:auto;bottom:8px;left:10px;color:var(--faint);font-weight:600">Yard</span></div>` +
+  pl.insertAdjacentHTML('beforeend', BL.map((b, i) => `<div class="blk bk-${i ? 's' : 'h'}" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%"><span class="bl">${b.l}</span></div>`).join('') +
+    `<div class="blk bk-y" style="left:${120 / 9.85}%;top:${20 / 3.2}%;width:${85 / 9.85}%;height:${182 / 3.2}%;border:1.5px dashed #c4c6c8;background:transparent"><span class="bl" style="top:auto;bottom:8px;left:10px;color:var(--faint);font-weight:600">Yard</span></div>` +
     ROOMS.map(r => { const p = POS[r.id]; return `<button class="rm" type="button" data-id="${r.id}" style="--c:${COL[r.type]};left:${p.x}%;top:${p.y}%;width:${p.w}%;height:${p.h}%" aria-label="${r.name}"><span>${r.name.split(' ')[0]}</span><span class="no">${r.name.split(' ')[1]}</span><small>${r.noise}</small></button>`; }).join(''));
   const tip = $('#tip');
   $$('.rm').forEach(b => {

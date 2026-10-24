@@ -117,7 +117,44 @@ if (document.fonts && document.fonts.load) {
   ]);
 }
 
+/* ---------- phone menu (≤ 640 px): the header pill hides, a menu button opens every page link ----------
+   Built here so every page gets it without touching the page markup; on wider screens the button and panel never show. */
+const PHONE = () => innerWidth <= 640;
+function mobileNav() {
+  const hdr = $('#hdr'), navg = hdr && $('.navg', hdr);
+  if (!navg) return;
+  const lh = $('.logo', hdr).getAttribute('href'), base = lh === './' ? '' : lh, pg = document.body.dataset.page;
+  const L = [['weekends', 'Weekends'], ['rooms', 'Rooms'], ['spa', 'Spa'], ['restaurant', 'Restaurant'], ['corporate', 'Corporate'], ['contact', 'Contact']];
+  const btn = Object.assign(document.createElement('button'), { className: 'mnav-btn', type: 'button', innerHTML: '<span></span><span></span>' });
+  btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', 'mnav'); btn.setAttribute('aria-label', 'Menu');
+  navg.appendChild(btn);
+  const p = Object.assign(document.createElement('div'), { className: 'mnav', id: 'mnav', hidden: true });
+  p.innerHTML = `<nav aria-label="Menu"><ul>${L.map(([k, t]) => `<li><a href="${base}${k}/"${pg === k ? ' aria-current="page"' : ''}>${t}</a></li>`).join('')}</ul>
+   <a class="btn btn-p" href="${base}rooms/">Book a room</a><p class="small">Seisiún weekends in a Georgian country house, Co. Kilkenny.</p></nav>`;
+  hdr.after(p);
+  const set = on => {
+    if (on === !p.hidden) return;
+    btn.setAttribute('aria-expanded', String(on)); btn.setAttribute('aria-label', on ? 'Close menu' : 'Menu');
+    document.documentElement.classList.toggle('mnav-open', on);
+    if (on) { p.hidden = false; void p.offsetWidth; p.classList.add('on'); $('a', p).focus({ preventScroll: true }); }
+    else { p.classList.remove('on'); p.hidden = true; btn.focus({ preventScroll: true }); }
+  };
+  btn.addEventListener('click', () => set(p.hidden));
+  p.addEventListener('click', e => { if (e.target === p || e.target.closest('a')) set(false); });
+  addEventListener('keydown', e => {
+    if (p.hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); set(false); }
+    else if (e.key === 'Tab') {             // focus stays in the menu (its links and the close button)
+      const f = [btn, ...$$('a', p)], i = f.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && (i === f.length - 1 || i < 0)) { e.preventDefault(); f[0].focus(); }
+    }
+  });
+  addEventListener('resize', () => { if (!PHONE()) set(false); });
+}
+
 /* ---------- boot ---------- */
+mobileNav();
 paintIcons();
 reveal();
 if (!document.documentElement.classList.contains('intro-on')) drawLogo();

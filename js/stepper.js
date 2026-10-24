@@ -5,7 +5,13 @@ import { days7, DOW, MON } from './data.js';
 
 export function stepper(root, cfg) {
   const st = { i: 0, v: {} };
+  let drawn = false;
   function draw() {
+    if (drawn && innerWidth <= 900) requestAnimationFrame(() => {   // ≤ 900 px: keep the progress bar and the new step in view
+      const t = root.querySelector('.bk-r').getBoundingClientRect().top, hh = document.getElementById('hdr').offsetHeight;
+      if (t < hh + 8 || t > innerHeight * .5) scrollBy({ top: t - hh - 20, behavior: 'smooth' });
+    });
+    drawn = true;
     const s = cfg.steps[st.i];
     root.innerHTML = `<div class="bk-g"><div class="bk-l"><div class="eyebrow">${cfg.eyebrow}</div><h2 class="d">${cfg.title}</h2><p class="lead">${cfg.lead}</p>
    <div class="sumlist"><h4>Your booking</h4>${cfg.steps.filter(x => !x.final && !x.nosum).map(x => `<div class="${st.v[x.key] ? 'on' : ''}"><span>${x.label}</span><b>${st.v[x.key] || '—'}</b></div>`).join('')}</div></div>

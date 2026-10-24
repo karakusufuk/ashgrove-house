@@ -446,7 +446,7 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 @media (max-width:900px){
   .cols2,.bk-g,.menu-g,.cband-g,.find-g{grid-template-columns:1fr}
   .band-g,.band.rev .band-g{grid-template-columns:1fr}.band.rev .b-txt{order:0}.band{height:auto}.band-pin{position:relative;height:auto;padding-block:80px}.b-ph{height:50vh}
-  .stage{flex-direction:column;align-items:stretch}.drawer{padding-top:0}.stage.open .drawer{flex-basis:auto}.stage.open .plan,.stage.open .legend{display:none}.dr-in{position:relative;top:0;width:100%;height:auto!important}
+  .stage{flex-direction:column;align-items:stretch}
   .pi-row{flex-direction:column;align-items:flex-start;gap:20px}
   .card{grid-template-columns:1fr}
   .frow{flex-wrap:wrap}.fsep{display:none}
@@ -478,3 +478,208 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 .dc th{font-size:13px;color:var(--muted);font-weight:700}
 .dc .ok{color:#2f6a3a;font-weight:700}
 .dc .bad{color:#b3261e;font-weight:700}
+
+/* ========== TABLET AND PHONE ==========
+   Everything below only applies under the desktop layout (≤ 900 px) or on touch screens; the desktop rules above are untouched.
+   New pieces (phone menu, the plain story list, guide photos, the room sheet bar) are hidden on desktop. */
+.mnav-btn,.st-list,.gph,.dr-nav,.dr-pl,.thm-go,.hbr{display:none}
+@keyframes swR{from{opacity:0;transform:translateX(36px)}}
+@keyframes swL{from{opacity:0;transform:translateX(-36px)}}
+@media (hover:none){.tip{display:none}.dr-pl{display:block}}
+/* 901–1100 (tablet landscape): the guide rows keep "rooms left" and the tickets line */
+@media (min-width:901px) and (max-width:1100px){.gr{grid-template-columns:140px minmax(0,1fr) 96px 118px 20px;gap:20px;padding:12px 22px}.gr .lf{display:block}}
+
+/* weekends on phones, tablets and any touch screen: the filters stay in the page (not stuck) and every feature shows its
+   full name, so nothing depends on a hover tooltip */
+@media (max-width:900px),(hover:none){
+  .filters{position:static;top:auto}   /* top:auto also keeps the script's "stuck" test false, so the band never goes compact */
+  .frow{flex-direction:column;align-items:stretch;gap:12px;padding-block:22px 4px}
+  #fT{order:-1;flex:none;justify-content:flex-start}
+  .fg{flex-wrap:wrap;justify-content:flex-start;gap:8px}
+  .fc{flex-direction:row;width:auto;gap:10px;height:44px;padding:0 16px 0 5px;border-radius:22px;box-shadow:inset 0 0 0 1px var(--line)}
+  .fc .ci{width:34px;height:34px}
+  .fc svg{width:18px;height:18px}
+  .fc .fl{display:none}
+  .fc::after{position:static;transform:none;opacity:1;box-shadow:none;background:none;padding:0;font-size:14px;color:var(--ink);transition:none}
+  .fc:hover .ci{background:none}
+  .fc.on{background:var(--ink);box-shadow:none}
+  .fc.on::after{color:#fff}
+  .fc.on .ci{background:#fff;color:var(--ink)}
+  .ft{height:44px}
+  .fmeta{height:auto;line-height:1.5;padding:8px 0 18px;text-align:left}
+  .fmeta button{min-height:44px}
+  .fsep{display:none}
+}
+/* ≤ 1100 px: the room details open as a sheet under the date strip (the side-by-side plan gets too narrow to read) */
+@media (max-width:1100px){
+  .stage{container-type:normal}
+  .drawer{position:fixed;left:0;right:0;bottom:0;top:calc(var(--hh) + var(--dsH,67px));z-index:19;display:block;flex:none;padding:0;overflow:hidden;background:#fff;box-shadow:0 -12px 40px rgba(0,0,0,.16);transform:translateY(102%);visibility:hidden;transition:transform .45s cubic-bezier(.2,.7,.2,1),visibility 0s linear .45s}
+  .stage.open .drawer{transform:none;visibility:visible;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+  .dr-in{position:relative;top:0;width:100%;height:100%!important;overflow-y:auto;overscroll-behavior:contain;box-shadow:none;padding-bottom:env(safe-area-inset-bottom,0px)}   /* scrolling stays in the sheet */
+  .dr-in>.drx{display:none}
+  .dr-nav{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) 44px;align-items:center;gap:4px;position:sticky;top:0;z-index:4;height:60px;padding:0 10px 0 6px;background:#fff;border-bottom:1px solid var(--line)}
+  .dr-go{display:flex;align-items:center;gap:6px;height:44px;padding:0 8px;min-width:0;font-size:13px;font-weight:700;color:var(--ink2)}
+  .dr-go.nx{justify-content:flex-end}
+  .dr-go i{font-style:normal;font-size:24px;line-height:1;color:var(--rose-d)}
+  .dr-go span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dr-go[disabled]{visibility:hidden}
+  .dr-t{text-align:center;line-height:1.25;padding:0 4px}
+  .dr-t b{display:block;font-weight:800;font-size:16px;white-space:nowrap}
+  .dr-t small{font-size:12px;color:var(--muted);white-space:nowrap}
+  .dr-x{width:44px;height:44px;display:grid;place-items:center;font-size:22px;box-shadow:inset 0 0 0 1px var(--line)}
+  .dr-in .ph{aspect-ratio:auto;height:min(42vh,62.5vw)}
+  .dr-pl{display:block;margin-top:4px}
+  .dr-b{padding:22px 20px 28px}
+  .dr-b .ct{font-size:30px}
+  .dr-in.sw-r .ph,.dr-in.sw-r .dr-b{animation:swR .38s cubic-bezier(.2,.7,.2,1)}
+  .dr-in.sw-l .ph,.dr-in.sw-l .dr-b{animation:swL .38s cubic-bezier(.2,.7,.2,1)}
+  .total b{font-size:38px}
+}
+@media (min-width:901px) and (max-width:1100px){.drawer{left:auto;width:480px;transform:translateX(102%)}.dr-in .ph{max-height:none;height:300px}}
+@media (max-width:900px){
+  :root{--hh:64px;--sec:88px;--dsH:61px}
+  .toast{top:calc(var(--hh) + 74px)}
+  /* home: headline on one line filling the frame (as on desktop), the story as a plain timeline */
+  .hero{padding-bottom:64px}
+  .hero h1{width:max-content;font-size:min(150px,calc(100cqw * 100 / var(--hw) - .2px));margin:26px 0 20px}
+  .story{height:auto!important;padding-block:24px var(--sec)}
+  .st-pin{display:none}
+  .st-list{display:block}
+  .st-list ol{list-style:none;margin:30px 0 0;padding:0;position:relative}
+  .st-list ol::before{content:"";position:absolute;left:6px;top:14px;bottom:24px;width:3px;border-radius:2px;background:repeating-linear-gradient(180deg,#2f3135 0,#4d5056 5px,#2f3135 10px)}
+  .st-list li{position:relative;padding:0 0 56px 40px}
+  .st-list li:last-child{padding-bottom:0}
+  .st-node{position:absolute;left:0;top:5px;width:15px;height:15px;background:var(--rose);border:2px solid #2f3135;border-radius:0 5px 0 5px}
+  .st-when{display:flex;gap:12px;align-items:baseline;font-size:15px;line-height:1.4}
+  .st-when b{font-weight:700}
+  .st-when span{color:var(--muted);font-variant-numeric:tabular-nums}
+  .st-list h3{font-size:clamp(44px,9vw,64px);margin:8px 0 10px}
+  .st-list p{margin:0 0 20px;font-size:17px;line-height:1.55;color:var(--ink2);max-width:40ch}
+  .st-ph{background:#fff;padding:10px;box-shadow:0 1px 2px rgba(0,0,0,.10),0 10px 22px -8px rgba(0,0,0,.28);max-width:560px}
+  .st-ph img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:#eee}
+  .sec-h{flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:28px}
+  .cal-ph{display:none}
+  .guide{gap:20px}
+  .gr{position:relative;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 24px;column-gap:16px;row-gap:12px;padding:0 20px 20px;overflow:hidden}
+  .gph,.gr .dt,.gr .ns{grid-column:1/-1}
+  .gph{display:block;margin:0 -20px 4px;aspect-ratio:16/9;overflow:hidden;background:#e4e4e2}
+  .gph img{width:100%;height:100%;object-fit:cover}
+  .gr .lf{display:block}
+  .gr .go{align-self:center}
+  .gr:hover,.gr.cur{transform:none;box-shadow:inset 0 0 0 1px var(--line)}
+  .corp-g{gap:36px}
+  /* brochure bands: not pinned; the two photos are a swipe row with the counter; alternate bands go dark so each one reads on its own */
+  .band-pin{padding-block:64px}
+  .b-txt h2{font-size:clamp(40px,8vw,56px)}
+  .b-ph{height:auto;aspect-ratio:4/3}
+  .b-sl{display:flex;gap:8px;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+  .b-sl::-webkit-scrollbar{display:none}
+  .b-ph .b-sl img{position:relative;inset:auto;flex:0 0 90%;height:100%;scroll-snap-align:start;clip-path:none!important;transform:none!important;transition:none}
+  .b-ph .b-sl img.p2{scroll-snap-align:end}
+  .b-ph .cnt{pointer-events:none}
+  .band.alt{background:var(--ink);color:#fff}
+  .band.alt .eyebrow,.band.alt .fact,.band.alt .rowsx span:nth-child(2){color:#b4b6b9}
+  .band.alt .lead{color:#e6e6e4}
+  .band.alt .fact b{color:#fff}
+  .band.alt .fact svg{color:var(--rose)}
+  .band.alt .rowsx div{border-color:rgba(255,255,255,.18)}
+  .band.alt .btn-s{border-color:#fff;color:#fff}
+  .band.alt .btn-s:hover{background:rgba(255,255,255,.08)}
+  .band.alt .tag{background:#fff;color:var(--ink)}
+  .facts{gap:20px 24px}
+  /* rooms: bigger date chips with a fade that shows the strip scrolls; the room details open as a sheet under the strip */
+  .dstrip .wrap{height:60px;padding-right:48px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent)}
+  .dchip,.clr{height:44px}
+  .wn input,.wn select{font-size:16px;padding:8px 6px}
+  .plan-sec{padding-block:28px 24px}
+  .card{gap:22px;padding-block:32px}
+  .ct{font-size:26px}
+  /* spa / restaurant: opening hours wrap cleanly */
+  .hours .wrap{gap:14px 24px}
+  .hours .sep{display:none}
+  .hours b{flex:1 1 calc(100% - 60px)}
+  .hours .wrap>span:not(.sep){flex:1 1 140px}
+  /* booking steppers */
+  .book h2{font-size:clamp(40px,8vw,56px)}
+  .sumlist{margin-top:28px}
+  .stepbox{min-height:0;margin-top:28px}
+  .prog-l{flex-wrap:wrap;justify-content:flex-start;column-gap:14px;row-gap:4px}
+  .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+  .chips:has(.ft){grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .chip{min-width:0}
+  .chips .ft{justify-content:center}
+  .fields{grid-template-columns:1fr}
+  .fields input{font-size:16px}
+  .navs .btn{flex:1 1 auto}
+  .back{min-height:44px}
+  .big{font-size:60px}
+  /* corporate: every theme row shows its full line; a tap shows that night; the link goes to the quote */
+  .thr{grid-template-columns:10px minmax(0,1fr) 14px;column-gap:14px;row-gap:2px;padding:12px 14px;min-height:64px}
+  .thr i{grid-row:1/span 3}
+  .thr b,.thr span,.thr em{grid-column:2}
+  .thr span{white-space:normal;overflow:visible}
+  .thr em{display:block}
+  .thr s{grid-column:3;grid-row:1/span 3}
+  .thm-go{display:inline-flex;min-height:44px}
+  /* footer: three link columns */
+  footer{padding-block:56px 32px}
+  .f-g{grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 16px}
+  .f-g>div:first-child,.f-g>div:last-child{grid-column:1/-1}
+  .f-col{gap:0}
+  .f-col a,.f-col span{padding:8px 0;line-height:1.4}
+  .f-note{margin-top:36px}
+}
+/* 641–900 (tablet portrait): the story moments read in two columns, text beside the photo */
+@media (min-width:641px) and (max-width:900px){
+  .st-list li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);column-gap:32px;align-items:start}
+  .st-list li>:not(.st-node):not(.st-ph){grid-column:1}
+  .st-ph{grid-column:2;grid-row:1/span 3}
+  .gr{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 24px}
+  .gph{aspect-ratio:21/9}
+}
+/* ≤ 740 px: the house plan becomes a grid of room tiles, grouped by building (the drawn plan gets too small to read) */
+@media (max-width:740px){
+  .plan{aspect-ratio:auto;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px;margin-top:22px}
+  .plan .blk{position:static;grid-column:1/-1;width:auto!important;height:auto!important;border:0;border-radius:0;background:none}
+  .plan .blk .bl{position:static;display:block;font-size:13px;margin-top:6px}
+  .plan .bk-y{display:none}
+  .plan .bk-s{order:3;margin-top:14px}
+  .rm{position:relative;left:auto!important;top:auto!important;width:auto!important;height:78px!important;grid-column:span 3;order:1}
+  .rm[data-id^="s"]{grid-column:span 6;order:2}
+  .rm[data-id^="f"]{grid-column:span 4;order:4}
+  .rm .no{font-size:26px}
+  .rm:hover{transform:none;box-shadow:none}
+  .rm.sel{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--ink)}
+  .legend{gap:12px 20px;margin-top:24px}
+}
+/* phones: the menu button replaces the header pill, the headline sits on two lines */
+@media (max-width:640px){
+  .nav{display:none}
+  .navg{gap:8px;align-items:center}
+  .navg>.btn{height:44px;padding:0 18px}
+  .logo b{font-size:12px;letter-spacing:.24em}
+  .mnav-btn{display:inline-flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;width:44px;height:44px;border:1px solid var(--ink);border-radius:0 var(--r) 0 var(--r)}
+  .mnav-btn span{display:block;width:18px;height:1.5px;background:var(--ink);transition:transform .25s ease}
+  .mnav-btn[aria-expanded="true"] span:first-child{transform:translateY(3.75px) rotate(45deg)}
+  .mnav-btn[aria-expanded="true"] span:last-child{transform:translateY(-3.75px) rotate(-45deg)}
+  .mnav{position:fixed;left:0;right:0;top:var(--hh);bottom:0;z-index:49;background:#fff;overflow-y:auto;overscroll-behavior:contain;opacity:0;transform:translateY(-8px);transition:opacity .25s ease,transform .25s ease}
+  .mnav.on{opacity:1;transform:none}
+  .mnav nav{padding:20px max(20px,env(safe-area-inset-left,0px)) calc(32px + env(safe-area-inset-bottom,0px))}
+  .mnav ul{list-style:none;margin:0 0 28px;padding:0}
+  .mnav li a{display:flex;align-items:center;justify-content:space-between;min-height:64px;border-bottom:1px solid var(--line);font-family:var(--head);text-transform:uppercase;font-size:34px;line-height:1;text-decoration:none}
+  .mnav li a::after{content:"→";font-family:var(--sans);font-size:20px;color:var(--rose-d)}
+  .mnav li a[aria-current]{color:var(--rose-d)}
+  .mnav .btn{width:100%}
+  .mnav .small{margin:18px 0 0}
+  html.mnav-open,html.mnav-open body{overflow:hidden}
+  .hbr{display:inline}
+  .hero h1{width:auto;font-size:min(96px,calc(100cqw * 100 / 668 - .2px));line-height:1.03}
+  .modal-in{padding:30px 22px 26px}
+  .modal-in h3{font-size:21px;padding-right:30px}
+  .cph2{grid-template-columns:1fr;gap:24px}
+  .cph2 img{height:260px}
+  .cph3{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;margin-inline:-16px;padding-inline:16px;scrollbar-width:none}
+  .cph3::-webkit-scrollbar{display:none}
+  .cph3 figure{flex:0 0 74%;scroll-snap-align:start}
+  .map,.abb{min-height:320px}
+}

@@ -79,6 +79,7 @@ function setCalLab(w) {
 function setCalPhoto(w) { setCalLab(w); calFront = swapPh($('#calA'), $('#calB'), calFront, `images/${PHOTO[w.main]}.jpg`, lbl(w)); }
 function renderGuide() {
   $('#guide').innerHTML = W.slice(0, 3).map(w => `<a class="gr ${w.n === calCur ? 'cur' : ''}" data-w="${w.n}" href="rooms/?w=${w.n}" aria-label="${lbl(w)}, ${rng(w)}">
+  <div class="gph"><img src="images/${PHOTO[w.main]}.jpg" alt="" width="${DIM[PHOTO[w.main]][0]}" height="${DIM[PHOTO[w.main]][1]}" loading="lazy" decoding="async"></div>
   <div class="dt"><b>${rng(w)}</b><span>${w.long ? 'Bank holiday' : 'Weekend ' + w.n}</span></div>
   <div class="ns">${w.nights.map(([d, x]) => `<div class="nt" style="--c:${TC[x.t]}"><i></i><div style="min-width:0"><b>${d} · ${x.name}</b><span>${x.act}</span></div></div>`).join('')}</div>
   <div class="pr">from<b>${eur(pp(w, 'garden'))}</b></div>
@@ -112,6 +113,9 @@ tlCol.innerHTML = '<div class="tl-line"></div>' + MOM.map((m, k) => `<div class=
 $('#stPh').innerHTML = MOM.map(m => `<img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async">`).join('');
 const its = $$('.tl-it'), phs = $$('#stPh img');
 story.style.height = `calc(${MOM.length * PER}vh + 100vh)`;
+/* ≤ 900 px: the same eight moments as a plain timeline (the pinned, one-step-per-scroll version needs a desktop-sized
+   screen; on a phone it clipped the copy). CSS shows one or the other. */
+story.insertAdjacentHTML('beforeend', `<div class="st-list wrap"><div class="eyebrow">A Seisiún weekend, hour by hour</div><ol>${MOM.map(m => `<li><span class="st-node" aria-hidden="true"></span><div class="st-when"><b>${m.day}</b><span>${m.h}</span></div><h3 class="d">${m.title}</h3><p>${m.txt}</p><figure class="st-ph"><img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async"></figure></li>`).join('')}</ol></div>`);
 let cur = -1, tlY = 190, tlS = 240;
 function layoutStory() {
   const h = its[0].querySelector('.d').offsetHeight; if (!h) return;
@@ -142,7 +146,7 @@ function storyStep() {
   storyText(MOM[i], first);
 }
 const stepTop = i => { const len = (story.offsetHeight - innerHeight) / MOM.length; return Math.round(absY(story) + len * (i + .5)); };
-registerHost({ el: story, n: MOM.length, pos: stepTop, down: () => ({ y: absY(story) + story.offsetHeight, host: null }), up: () => ({ y: 0, host: null }) });
+registerHost({ el: story, n: MOM.length, enabled: () => innerWidth > 900, pos: stepTop, down: () => ({ y: absY(story) + story.offsetHeight, host: null }), up: () => ({ y: 0, host: null }) });
 addEventListener('resize', layoutStory);
 let stk = 0;
 addEventListener('scroll', () => { if (!stk) { stk = 1; requestAnimationFrame(() => { storyStep(); stk = 0; }); } }, { passive: true });
