@@ -684,3 +684,6 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
   .cph3 figure{flex:0 0 74%;scroll-snap-align:start}
   .map,.abb{min-height:320px}
 }
+
+/* tablet and phone: small labels at 12px */
+@media (max-width:1100px){.dchip .full,.rm small{font-size:12px}}
