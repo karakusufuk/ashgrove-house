@@ -627,6 +627,7 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
   .f-g>div:first-child,.f-g>div:last-child{grid-column:1/-1}
   .f-col{gap:0}
   .f-col a,.f-col span{padding:8px 0;line-height:1.4}
+  .f-col a{padding:11px 0}
   .f-note{margin-top:36px}
 }
 /* 641–900 (tablet portrait): the story moments read in two columns, text beside the photo */

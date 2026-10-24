@@ -33,7 +33,7 @@
 <!--/HDR-->
 <main id="main">
   <section class="hero"><div class="wrap">
-    <div class="hero-frame" id="heroFrame"><video id="heroVid" muted playsinline preload="auto" poster="images/hero-start.jpg" aria-label="Ashgrove House from the air, from an afternoon to a Seisiún night"><source src="images/hero.webm" type="video/webm"><source src="images/hero.mp4" type="video/mp4"></video></div>
+    <div class="hero-frame" id="heroFrame"><video id="heroVid" muted playsinline preload="auto" poster="images/hero-start.jpg" aria-label="Ashgrove House from the air, from an afternoon to a Seisiún night"><source src="images/hero.webm" type="video/webm"><source src="images/hero.mp4" type="video/mp4"></video><script>if(matchMedia("(max-width:760px)").matches){var hv=document.getElementById("heroVid");hv.preload="none";hv.poster="images/hero-end.jpg";[].slice.call(hv.querySelectorAll("source")).forEach(function(s){s.remove()})}</script></div>
     <h1 class="d" id="heroH">Spa by day.<br class="hbr"> Seisiún by night.</h1>
     <div class="hero-sub">
       <p class="lead">Two themed nights with a live act each night, in a Georgian country house in Kilkenny with sixteen rooms upstairs.</p>

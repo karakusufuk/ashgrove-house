@@ -7,14 +7,15 @@ const vid = $('#heroVid');
 const root = document.documentElement;
 
 /* ---------- the hero film runs once from afternoon to night and rests on the last frame ---------- */
+const phoneStill = () => matchMedia('(max-width:760px)').matches;   // phones: the night frame only, the 4 MB film is never fetched
 function playHero() {
   if (!vid) return;
-  if (reducedMotion()) return;
+  if (reducedMotion() || phoneStill()) return;
   try { vid.currentTime = 0; } catch (e) {}
   const p = vid.play();
   if (p && p.catch) p.catch(() => {});
 }
-if (vid && reducedMotion()) {          // no playback: the night frame is shown as the poster and the film is never fetched
+if (vid && (reducedMotion() || phoneStill())) {          // no playback: the night frame is shown as the poster and the film is never fetched
   vid.poster = 'images/hero-end.jpg';
   vid.preload = 'none';
   vid.querySelectorAll('source').forEach(s => s.remove());
