@@ -244,8 +244,9 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 .fmeta button{text-decoration:underline;color:var(--ink);margin-left:12px;font-weight:700}
 .cards{padding-block:30px 120px}
 .closest{font-size:14px;color:var(--muted);padding:14px 0}
-.card{display:grid;grid-template-columns:320px minmax(0,1fr) 270px;gap:40px;padding-block:36px;border-top:1px solid var(--line);animation:cin .45s ease both}
-.card:last-child{border-bottom:1px solid var(--line)}
+.card{display:grid;grid-template-columns:320px minmax(0,1fr) 270px;gap:40px;padding:36px;background:#fff;animation:cin .45s ease both}
+.cards .card:nth-of-type(odd){background:#f1f1ef}   /* cards alternate very light grey / white */
+.csum{display:none}
 @keyframes cin{from{opacity:0;transform:translateY(12px)}}
 .cph{aspect-ratio:4/3;overflow:hidden;background:#eee}
 .cph img{width:100%;height:100%;object-fit:cover}
@@ -370,6 +371,11 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 .hero{padding-top:calc(var(--hh) + 28px);padding-bottom:96px}
 .hero .wrap{container-type:inline-size}
 .hero-frame{height:clamp(280px,calc(100vh - 372px),560px);overflow:hidden;background:#e9e9e7}
+@media (min-width:901px){
+  /* the gap under the header (28 px) equals the gap under the video; only the top edge of the headline shows on the first screen */
+  .hero-frame{height:max(320px,calc(100vh - var(--hh) - 56px))}
+  .hero h1{margin-top:6px}
+}
 .hero-frame video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 18%}
 /* the headline fills the frame on one line: sized in CSS from the Anton width ratio (so nothing shifts when the font arrives), then refined by js/home.js */
 .hero h1{--hw:1126;font-size:min(150px,calc(100cqw * 100 / var(--hw) - .2px));margin:34px 0 24px;width:max-content}
@@ -482,7 +488,7 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 /* ========== TABLET AND PHONE ==========
    Everything below only applies under the desktop layout (≤ 900 px) or on touch screens; the desktop rules above are untouched.
    New pieces (phone menu, the plain story list, guide photos, the room sheet bar) are hidden on desktop. */
-.mnav-btn,.st-list,.gph,.dr-nav,.dr-pl,.thm-go,.hbr{display:none}
+.mnav-btn,.st-list,.gph,.gname,.dr-nav,.dr-pl,.thm-go,.hbr{display:none}
 @keyframes swR{from{opacity:0;transform:translateX(36px)}}
 @keyframes swL{from{opacity:0;transform:translateX(-36px)}}
 @media (hover:none){.tip{display:none}.dr-pl{display:block}}
@@ -687,3 +693,42 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 
 /* tablet and phone: small labels at 12px */
 @media (max-width:1100px){.dchip .full,.rm small{font-size:12px}}
+
+/* ========== 26 Oct review ========== */
+/* story on tablet and phone: no animation, no line. One moment at a time: a square print photo with a white border,
+   then day and time, the title and the line of text. Each moment fills the screen, so a scroll changes photo and text together. */
+@media (max-width:900px){
+  .st-list ol{margin:8px 0 0}
+  .st-list ol::before{display:none}
+  .st-list li,.st-list li:last-child{display:flex;flex-direction:column;justify-content:center;max-width:480px;margin:0 auto;padding:24px 0;min-height:calc(100svh - var(--hh) - 8px)}
+  .st-list li>:not(.st-ph){grid-column:auto}
+  .st-ph{order:-1;width:100%;max-width:none;padding:12px;margin:0 0 24px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.10),0 10px 22px -8px rgba(0,0,0,.28)}
+  .st-ph img{aspect-ratio:1/1;height:auto}
+  .st-when{gap:10px;font-size:16px}
+  .st-list h3{font-size:clamp(46px,12vw,60px);margin:6px 0 10px}
+  .st-list p{margin:0;max-width:34ch}
+}
+/* weekend cards: tablet padding */
+@media (max-width:900px){.card{padding:28px 24px}}
+/* phones: homepage cards show the photo and the event name only */
+@media (max-width:640px){
+  .gr .dt,.gr .ns,.gr .pr,.gr .lf,.gr .go{display:none}
+  .gr{grid-template-columns:1fr;padding:0 20px 18px;row-gap:12px}
+  .gname{display:block;grid-column:1/-1;font-weight:800;font-size:19px;line-height:1.3;color:var(--ink)}
+  /* weekends: a card shows the photo, dates, name and price line; a tap shows everything */
+  .card{padding:14px 14px 10px;gap:14px;cursor:pointer}
+  .card .desc,.card .nb,.card .day,.card .cside{display:none}
+  .card.open .desc{display:block}
+  .card.open .nb{display:grid}
+  .card.open .day{display:flex}
+  .card.open .cside{display:flex}
+  .csum{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:var(--ink2);margin:0 0 6px}
+  .csum b{font-weight:800;color:var(--ink)}
+  .ctog{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 2px 0 10px;font:700 13px var(--sans);color:var(--ink)}
+  .ctog i{width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .25s ease}
+  .tg-c{display:none}
+  .card.open .tg-o{display:none}
+  .card.open .tg-c{display:inline}
+  .card.open .ctog i{transform:translateY(2px) rotate(-135deg)}
+}
+@media (min-width:641px){.ctog{display:none}}

@@ -1,6 +1,6 @@
 // Home: intro, hero film, hero headline fit, "Next" line.
 import { $, $$, drawLogo, reducedMotion, swapPh } from './site.js';
-import { W, lbl, rng, TC, PHOTO, pp, rl, eur, DIM } from './data.js';
+import { W, lbl, rng, TC, photoOf, ALL_PHOTOS, pp, rl, eur, DIM } from './data.js';
 import { registerHost, absY } from './paced.js';
 
 const vid = $('#heroVid');
@@ -71,16 +71,17 @@ addEventListener('pageshow', e => {
 
 /* ---------- upcoming weekends: one picture, three slim guide rows ---------- */
 let calCur = 1, calFront = 'A';
-Object.values(PHOTO).forEach(n => { const im = new Image(); im.src = `images/${n}.jpg`; });   // all theme photos preloaded
+ALL_PHOTOS.forEach(n => { const im = new Image(); im.src = `images/${n}.jpg`; });   // all theme photos preloaded
 function setCalLab(w) {
   const l = $('#calLab');
   l.style.setProperty('--c', TC[w.main]);
   l.innerHTML = `<i></i><b>${w.long ? 'Bank holiday · ' : ''}${lbl(w)}</b><span>${rng(w)}</span>`;
 }
-function setCalPhoto(w) { setCalLab(w); calFront = swapPh($('#calA'), $('#calB'), calFront, `images/${PHOTO[w.main]}.jpg`, lbl(w)); }
+function setCalPhoto(w) { setCalLab(w); calFront = swapPh($('#calA'), $('#calB'), calFront, `images/${photoOf(w)}.jpg`, lbl(w)); }
 function renderGuide() {
   $('#guide').innerHTML = W.slice(0, 3).map(w => `<a class="gr ${w.n === calCur ? 'cur' : ''}" data-w="${w.n}" href="rooms/?w=${w.n}" aria-label="${lbl(w)}, ${rng(w)}">
-  <div class="gph"><img src="images/${PHOTO[w.main]}.jpg" alt="" width="${DIM[PHOTO[w.main]][0]}" height="${DIM[PHOTO[w.main]][1]}" loading="lazy" decoding="async"></div>
+  <div class="gph"><img src="images/${photoOf(w)}.jpg" alt="" width="${DIM[photoOf(w)][0]}" height="${DIM[photoOf(w)][1]}" loading="lazy" decoding="async"></div>
+  <div class="gname">${w.long ? 'Bank holiday · ' : ''}${lbl(w)}</div>
   <div class="dt"><b>${rng(w)}</b><span>${w.long ? 'Bank holiday' : 'Weekend ' + w.n}</span></div>
   <div class="ns">${w.nights.map(([d, x]) => `<div class="nt" style="--c:${TC[x.t]}"><i></i><div style="min-width:0"><b>${d} · ${x.name}</b><span>${x.act}</span></div></div>`).join('')}</div>
   <div class="pr">from<b>${eur(pp(w, 'garden'))}</b></div>
@@ -93,7 +94,7 @@ function renderGuide() {
     r.addEventListener('focus', on);
   });
 }
-$('#calA').src = `images/${PHOTO[W[0].main]}.jpg`;
+$('#calA').src = `images/${photoOf(W[0])}.jpg`;
 $('#calA').alt = lbl(W[0]);
 setCalLab(W[0]);
 renderGuide();
@@ -116,7 +117,7 @@ const its = $$('.tl-it'), phs = $$('#stPh img');
 story.style.height = `calc(${MOM.length * PER}vh + 100vh)`;
 /* ≤ 900 px: the same eight moments as a plain timeline (the pinned, one-step-per-scroll version needs a desktop-sized
    screen; on a phone it clipped the copy). CSS shows one or the other. */
-story.insertAdjacentHTML('beforeend', `<div class="st-list wrap"><div class="eyebrow">A Seisiún weekend, hour by hour</div><ol>${MOM.map(m => `<li><span class="st-node" aria-hidden="true"></span><div class="st-when"><b>${m.day}</b><span>${m.h}</span></div><h3 class="d">${m.title}</h3><p>${m.txt}</p><figure class="st-ph"><img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async"></figure></li>`).join('')}</ol></div>`);
+story.insertAdjacentHTML('beforeend', `<div class="st-list wrap"><div class="eyebrow">A Seisiún weekend, hour by hour</div><ol>${MOM.map(m => `<li><figure class="st-ph"><img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async"></figure><div class="st-when"><b>${m.day}</b><span>${m.h}</span></div><h3 class="d">${m.title}</h3><p>${m.txt}</p></li>`).join('')}</ol></div>`);
 let cur = -1, tlY = 190, tlS = 240;
 function layoutStory() {
   const h = its[0].querySelector('.d').offsetHeight; if (!h) return;

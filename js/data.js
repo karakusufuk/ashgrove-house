@@ -5,6 +5,10 @@
 export const TC = { greek: 'var(--greek)', latin: 'var(--latin)', '90s': 'var(--s90)', bingo: 'var(--bingo)', white: 'var(--white)', comedy: 'var(--comedy)', acoustic: 'var(--acoustic)', dj: 'var(--dj)' };
 export const TN = { greek: 'Greek', latin: 'Latin', '90s': '90s–00s', bingo: 'Rave bingo', white: 'White party' };
 export const PHOTO = { latin: 'theme-latin', greek: 'theme-greek', '90s': 'theme-90s', bingo: 'theme-bingo', white: 'theme-white-party' };
+// one picture per weekend (same theme, a different shot when the theme comes round again)
+const PHOTO_W = ['theme-latin', 'theme-greek', 'theme-90s', 'theme-bingo', 'theme-white-party', 'theme-greek-2', 'theme-latin', 'theme-90s-2', 'theme-greek', 'theme-bingo-2'];
+export const photoOf = w => PHOTO_W[w.n - 1];
+export const ALL_PHOTOS = [...new Set([...Object.values(PHOTO), ...PHOTO_W])];
 
 /* ---------- dates ---------- */
 export const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -178,9 +182,12 @@ export const DIM = {
   'story-07-party': [1536, 1024],
   'story-08-goodbye': [1536, 1024],
   'theme-90s': [1456, 1024],
-  'theme-bingo': [1200, 800],
-  'theme-greek': [1200, 800],
+  'theme-90s-2': [1536, 1024],
+  'theme-bingo': [1536, 1024],
+  'theme-bingo-2': [1536, 1024],
+  'theme-greek': [1536, 1024],
+  'theme-greek-2': [1536, 1024],
   'theme-latin': [1536, 1024],
-  'theme-white-party': [1200, 800],
+  'theme-white-party': [1536, 1024],
   'weekends-intro': [1374, 1145],
 };

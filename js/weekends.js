@@ -1,7 +1,7 @@
 // Weekends: filter band (circles, pills, tooltips, compact on scroll), filter logic and the ten cards.
 import { $, $$ } from './site.js';
 import { ico } from './icons.js';
-import { W, TC, PHOTO, FL, FR, FT, filterWeekends, lbl, pp, rl, eur, weekendDates, DIM } from './data.js';
+import { W, TC, photoOf, FL, FR, FT, filterWeekends, lbl, pp, rl, eur, weekendDates, DIM } from './data.js';
 
 const act = { t: new Set(), f: new Set() };
 const fc = ([k, i, l, full]) => `<button class="fc" type="button" data-f="${k}" data-tip="${full}" aria-label="${full}" aria-pressed="false"><span class="ci">${ico(i)}</span><span class="fl">${l}</span></button>`;
@@ -13,11 +13,13 @@ $$('.fc').forEach(b => b.addEventListener('click', () => toggle(act.f, b.dataset
 $$('.ft').forEach(b => b.addEventListener('click', () => toggle(act.t, b.dataset.t, b)));
 
 function card(w, i) {
-  const sold = !w.rooms, ph = PHOTO[w.main];
+  const sold = !w.rooms, ph = photoOf(w);
   const out = w.out === 'closed' ? `<span class="closed">${ico('ticket')}Closed to outside guests</span>` : w.out === 'sat' ? `<span class="closed">${ico('ticket')}Saturday closed, group booking</span>` : `<span>${ico('ticket')}Open to outside guests</span>`;
   return `<article class="card" data-w="${w.n}"><div class="cph"><img src="../images/${ph}.jpg" alt="${lbl(w)}" width="${DIM[ph][0]}" height="${DIM[ph][1]}" loading="lazy"></div>
  <div class="cmain"><div class="small">${weekendDates(w)}</div>
-  <h3 class="ct">${w.long ? 'Bank holiday long weekend' : lbl(w)}</h3><p class="desc">${w.desc}</p>
+  <h3 class="ct">${w.long ? 'Bank holiday long weekend' : lbl(w)}</h3>
+  <div class="csum"><span><b>${sold ? 'Sold out' : 'from ' + eur(pp(w, 'garden'))}</b>${sold ? '' : ' · ' + rl(w.rooms)}</span><button class="ctog" type="button" aria-expanded="false" aria-label="Show all details for ${lbl(w)}"><span class="tg-o">Details</span><span class="tg-c">Less</span><i aria-hidden="true"></i></button></div>
+  <p class="desc">${w.desc}</p>
   <div class="nb" style="--n:${w.nights.length}">${w.nights.map(([d, x]) => `<div class="nbx" style="--c:${TC[x.t]}"><div class="small">${d} night</div><b>${x.name}</b><span>${x.act}</span></div>`).join('')}</div>
   <div class="day">${ico(w.day === 'yoga' ? 'yoga' : w.day === 'trek' ? 'trek' : 'clock')}Daytime: ${w.day === 'yoga' ? 'yoga' : w.day === 'trek' ? 'guided walk' : 'free day'} · one spa session included</div></div>
  <div class="cside"><span class="kids ${w.kids ? 'yes' : ''}">${ico('kids')}${w.kids ? 'Children welcome' : 'Not suitable for children'}</span>
@@ -28,6 +30,14 @@ function card(w, i) {
   ${w.out !== 'closed' ? `<button class="btn btn-t" type="button" data-tix="${w.n}">Evening tickets · €75</button>` : ''}
  </div></article>`;
 }
+// phones: a card shows its photo, dates, name and the price line; a tap on the card opens or closes the rest
+$('#cards').addEventListener('click', e => {
+  const c = e.target.closest('.card');
+  if (!c || e.target.closest('a, .btn') || !matchMedia('(max-width:640px)').matches) return;
+  const on = c.classList.toggle('open');
+  const b = $('.ctog', c);
+  if (b) { b.setAttribute('aria-expanded', String(on)); b.setAttribute('aria-label', (on ? 'Hide' : 'Show all') + ' details for ' + $('.ct', c).textContent); }
+});
 function renderCards() {
   const { list, closest } = filterWeekends(act.t, act.f);
   $('#cards').innerHTML = (closest ? `<div class="closest">No weekend has all of these. These come closest:</div>` : '') + list.map(card).join('');
