@@ -29,24 +29,21 @@ function tick() {
 }
 vid.addEventListener('playing', () => requestAnimationFrame(tick));
 vid.addEventListener('ended', () => { done = true; showEnd(); vid.style.filter = vid.style.transform = ''; });
-/* the film starts only when the connection can carry it to the end: enough is buffered and the measured download speed covers the rest
-   (with a safety margin), so it never stalls halfway; the other photo preloads wait until the film is fully in. The intro curtain and
-   the still first frame cover the wait. */
+/* the film starts only when it is completely in the browser's buffer, so it cannot stall; the intro curtain's loading line follows this
+   download (and the curtain stays up until it is done), the other photo preloads wait for it, and a 25 s cap keeps a dead line from blocking the page. */
 const buffered = () => (vid.buffered.length ? vid.buffered.end(vid.buffered.length - 1) : 0);
-let filmFullRes; const filmFull = new Promise(r => { filmFullRes = r; });
-const filmReady = new Promise(res => {
-  if (!vid || reducedMotion() || phoneStill()) { filmFullRes(); return res(false); }
-  const t0 = performance.now(), hist = [];
+const wantFilm = !!vid && !reducedMotion() && !phoneStill();
+let filmDone = !wantFilm, filmFullRes; const filmFull = new Promise(r => { filmFullRes = () => { filmDone = true; r(true); }; });
+const filmProgress = () => (filmDone ? 1 : vid.duration ? Math.min(.99, buffered() / vid.duration) : 0);
+if (!wantFilm) filmFullRes();
+else {
+  const t0 = performance.now();
   const iv = setInterval(() => {
-    const d = vid.duration, b = buffered(), now = performance.now(), el = (now - t0) / 1000;
-    if (!d || vid.readyState < 3) return;
-    if (b >= d - .05) { filmFullRes(); res(true); clearInterval(iv); return; }
-    hist.push([now, b]); while (hist.length > 1 && now - hist[0][0] > 2500) hist.shift();
-    const rate = hist.length > 3 ? (b - hist[0][1]) / ((now - hist[0][0]) / 1000) : 0;   // seconds of film per second, over the last 2.5 s
-    if (b >= 3 && rate > 0 && (d - b) / rate <= d * .35) res(true);                      // the rest arrives about three times faster than it plays
-    if (el > 25) { res(true); filmFullRes(); clearInterval(iv); }                          // never wait for ever
-  }, 150);
-});
+    if (vid.duration && buffered() >= vid.duration - .05) { clearInterval(iv); filmFullRes(); }
+    else if (performance.now() - t0 > 25000) { clearInterval(iv); filmFullRes(); }
+  }, 100);
+}
+const filmReady = filmFull;
 async function playHero() {
   if (!vid || ended) return;
   if (reducedMotion() || phoneStill()) return;
@@ -81,8 +78,8 @@ headerState();
 function intro() {
   const ov = $('#intro');
   if (!root.classList.contains('intro-on')) { ov.classList.add('done'); playHero(); return; }
-  setTimeout(() => {
-    const r = $('#heroFrame').getBoundingClientRect();
+  const open = () => {
+    const r = frame.getBoundingClientRect();
     ov.classList.add('go');
     setTimeout(playHero, 1500);
     $('.ip.l', ov).style.width = Math.max(0, r.left) + 'px';
@@ -94,7 +91,18 @@ function intro() {
       drawLogo();
       setTimeout(() => { ov.classList.add('done'); root.classList.remove('intro-on'); }, 950);
     }, 2400);
-  }, 1050);
+  };
+  // the loading line is the film arriving (at least 1 s of line, so a cached film still shows the black → white curtain); white = loaded, then the curtain opens
+  const t0 = performance.now();
+  let p = 0;
+  (function load() {
+    const el = (performance.now() - t0) / 1000;
+    p = Math.max(p, Math.min(filmProgress(), el));
+    if (filmDone && el >= 1) p = 1;
+    ov.style.setProperty('--p', p.toFixed(4));
+    ov.classList.toggle('half', p >= .5);
+    if (p < 1) requestAnimationFrame(load); else setTimeout(open, 50);
+  })();
 }
 intro();
 

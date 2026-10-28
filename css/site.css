@@ -351,23 +351,19 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
 /* ========== HOME ========== */
-/* intro: the curtain goes from black (0 %) through grey (50 %) to white (100 %) with the loading line, then the white curtain opens onto the white page and the frame; no black is left at the frame's edges (only when the head script sets .intro-on) */
-.intro{display:none;position:fixed;inset:0;z-index:300;pointer-events:none}
+/* intro: the curtain goes from black (0 %) through grey (50 %) to white (100 %) with the loading line, which follows the film actually arriving (js sets --p), then the white curtain opens onto the white page and the frame; no black is left at the frame's edges (only when the head script sets .intro-on) */
+.intro{--p:0;display:none;position:fixed;inset:0;z-index:300;pointer-events:none}
 .intro-on .intro{display:block}
-.intro .ip{position:absolute;left:0;right:0;height:50%;background:#000;animation:inbg 1s linear forwards;transition:height 1.8s cubic-bezier(.65,0,.35,1),opacity .9s ease}
+.intro .ip{position:absolute;left:0;right:0;height:50%;background:rgb(calc(var(--p) * 255),calc(var(--p) * 255),calc(var(--p) * 255));transition:height 1.8s cubic-bezier(.65,0,.35,1),opacity .9s ease}
 .intro .ip.t{top:0}.intro .ip.b{bottom:0}
 .intro .ip.l,.intro .ip.r{top:0;bottom:0;height:auto;width:0;transition:opacity .9s ease}
 .intro .ip.l{left:0;right:auto}.intro .ip.r{right:0;left:auto}
 .intro .lo{position:absolute;inset:0;display:grid;place-items:center;z-index:2;transition:opacity .5s}
 .intro .lo div{display:flex;flex-direction:column;align-items:center;gap:18px}
-.intro .lo b{font-family:var(--logo);font-weight:600;font-size:16px;letter-spacing:.36em;color:#e8e8e8;animation:intx 1s linear forwards}
-.intro .lo i{display:block;width:150px;height:1px;background:rgba(255,255,255,.14);overflow:hidden;animation:intr 1s linear forwards}
-.intro .lo i span{display:block;height:100%;background:#e8e8e8;transform:translateX(-100%);animation:ld 1s linear forwards,intx2 1s linear forwards}
-@keyframes ld{to{transform:none}}
-@keyframes inbg{0%{background:#000}50%{background:#808080}100%{background:#fff}}
-@keyframes intx{0%,49%{color:#e8e8e8}50%,100%{color:#1b1c1e}}
-@keyframes intx2{0%,49%{background:#e8e8e8}50%,100%{background:#1b1c1e}}
-@keyframes intr{0%,49%{background:rgba(255,255,255,.14)}50%,100%{background:rgba(0,0,0,.12)}}
+.intro .lo b{font-family:var(--logo);font-weight:600;font-size:16px;letter-spacing:.36em;color:#e8e8e8}
+.intro .lo i{display:block;width:150px;height:1px;background:rgba(255,255,255,.14);overflow:hidden}
+.intro .lo i span{display:block;height:100%;background:#e8e8e8;transform:scaleX(var(--p));transform-origin:0 50%}
+.intro.half .lo b{color:#1b1c1e}.intro.half .lo i{background:rgba(0,0,0,.12)}.intro.half .lo i span{background:#1b1c1e}
 .intro.go .lo{opacity:0}
 .intro.fade .ip{opacity:0}
 .intro-on .intro.done,.intro.done{display:none}
