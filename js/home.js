@@ -16,9 +16,9 @@ function showEnd() {                                        // idempotent: the f
   ended = true;
   frame.classList.add('is-ending');
 }
-function watchEnd() {                                       // starts the blur a moment before the last frame so the picture never stops dead
+function watchEnd() {                                       // starts the blur 1 s before the last frame so the picture never stops dead
   if (ended) return;
-  if (vid.duration && vid.duration - vid.currentTime <= .5) showEnd(); else requestAnimationFrame(watchEnd);
+  if (vid.duration && vid.duration - vid.currentTime <= 1) showEnd(); else requestAnimationFrame(watchEnd);
 }
 vid.addEventListener('playing', () => requestAnimationFrame(watchEnd));
 vid.addEventListener('ended', showEnd);
