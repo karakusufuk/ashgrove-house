@@ -29,18 +29,21 @@ function tick() {
 }
 vid.addEventListener('playing', () => requestAnimationFrame(tick));
 vid.addEventListener('ended', () => { done = true; showEnd(); vid.style.filter = vid.style.transform = ''; });
-/* the film is fetched completely first and played from memory, so it can never stall while photos and fonts share the line;
-   the intro curtain and the still first frame cover the wait, and the other photo preloads wait until the film is in */
+/* the film starts only when the connection can carry it to the end: enough is buffered and the measured download speed covers the rest
+   (with a safety margin), so it never stalls halfway; the other photo preloads wait until the film is fully in. The intro curtain and
+   the still first frame cover the wait. */
+const buffered = () => (vid.buffered.length ? vid.buffered.end(vid.buffered.length - 1) : 0);
+let filmFullRes; const filmFull = new Promise(r => { filmFullRes = r; });
 const filmReady = new Promise(res => {
-  if (!vid || reducedMotion() || phoneStill()) return res(false);
-  const src = [...vid.querySelectorAll('source')].find(x => vid.canPlayType(x.type));
-  const plain = () => { vid.preload = 'auto'; vid.load(); res(true); };
-  if (!src || !window.fetch || !URL.createObjectURL) return plain();
-  fetch(src.src).then(r => { if (!r.ok) throw 0; return r.blob(); }).then(b => {
-    vid.removeAttribute('preload'); vid.src = URL.createObjectURL(b); vid.load();
-    vid.addEventListener('canplaythrough', () => res(true), { once: true });
-    setTimeout(() => res(true), 3000);
-  }).catch(plain);
+  if (!vid || reducedMotion() || phoneStill()) { filmFullRes(); return res(false); }
+  const t0 = performance.now();
+  const iv = setInterval(() => {
+    const d = vid.duration, b = buffered(), el = (performance.now() - t0) / 1000;
+    if (!d || vid.readyState < 3) return;
+    if (b >= d - .05) { filmFullRes(); res(true); clearInterval(iv); return; }
+    if (b >= 1.5 && (d - b) / (b / el) <= d * .7) res(true);          // the rest arrives faster than it plays (30 % margin)
+    if (el > 25) { res(true); filmFullRes(); clearInterval(iv); }      // never wait for ever
+  }, 150);
 });
 async function playHero() {
   if (!vid || ended) return;
@@ -100,7 +103,7 @@ addEventListener('pageshow', e => {
 
 /* ---------- upcoming weekends: one picture, three slim guide rows ---------- */
 let calCur = 1, calFront = 'A';
-filmReady.then(() => { ALL_PHOTOS.forEach(n => { const im = new Image(); im.src = `images/${n}.jpg`; }); });   // all theme photos preloaded (after the film is in)
+filmFull.then(() => { ALL_PHOTOS.forEach(n => { const im = new Image(); im.src = `images/${n}.jpg`; }); });   // all theme photos preloaded (after the film is in)
 function setCalLab(w) {
   const l = $('#calLab');
   l.style.setProperty('--c', TC[w.main]);
