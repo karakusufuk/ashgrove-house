@@ -36,13 +36,15 @@ const buffered = () => (vid.buffered.length ? vid.buffered.end(vid.buffered.leng
 let filmFullRes; const filmFull = new Promise(r => { filmFullRes = r; });
 const filmReady = new Promise(res => {
   if (!vid || reducedMotion() || phoneStill()) { filmFullRes(); return res(false); }
-  const t0 = performance.now();
+  const t0 = performance.now(), hist = [];
   const iv = setInterval(() => {
-    const d = vid.duration, b = buffered(), el = (performance.now() - t0) / 1000;
+    const d = vid.duration, b = buffered(), now = performance.now(), el = (now - t0) / 1000;
     if (!d || vid.readyState < 3) return;
     if (b >= d - .05) { filmFullRes(); res(true); clearInterval(iv); return; }
-    if (b >= 1.5 && (d - b) / (b / el) <= d * .7) res(true);          // the rest arrives faster than it plays (30 % margin)
-    if (el > 25) { res(true); filmFullRes(); clearInterval(iv); }      // never wait for ever
+    hist.push([now, b]); while (hist.length > 1 && now - hist[0][0] > 2500) hist.shift();
+    const rate = hist.length > 3 ? (b - hist[0][1]) / ((now - hist[0][0]) / 1000) : 0;   // seconds of film per second, over the last 2.5 s
+    if (b >= 3 && rate > 0 && (d - b) / rate <= d * .35) res(true);                      // the rest arrives about three times faster than it plays
+    if (el > 25) { res(true); filmFullRes(); clearInterval(iv); }                          // never wait for ever
   }, 150);
 });
 async function playHero() {
