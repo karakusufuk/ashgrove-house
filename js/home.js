@@ -8,20 +8,27 @@ const frame = $('#heroFrame');
 const root = document.documentElement;
 const V = '?v=20261028';
 
-/* ---------- the hero film runs once from afternoon to night; its last frame eases into a blur and the headline fades in over it ---------- */
+/* ---------- the hero film runs once from afternoon to night; the blur grows over its last 2 s while the drone still flies, and the headline fades in with it ---------- */
 const phoneStill = () => matchMedia('(max-width:760px)').matches;   // phones: the night frame only, the 5 MB film is never fetched
-let ended = false;
+let ended = false, done = false;
+const BLUR = 45, SCALE = .10;                               // 100 % blur: the house is no longer recognisable (the old 9 px was the 20 % level)
+const LEAD = 2;                                             // the blur grows over the last 2 s of the film, while the drone is still moving
 function showEnd() {                                        // idempotent: the final state is never left again
   if (ended) return;
   ended = true;
   frame.classList.add('is-ending');
 }
-function watchEnd() {                                       // starts the blur 1 s before the last frame so the picture never stops dead
-  if (ended) return;
-  if (vid.duration && vid.duration - vid.currentTime <= 1) showEnd(); else requestAnimationFrame(watchEnd);
+function tick() {
+  if (done) return;
+  const d = vid.duration, x = d ? Math.min(1, Math.max(0, (vid.currentTime - (d - LEAD)) / LEAD)) : 0;
+  const k = Math.pow(x, 2.32);                              // 0 → 20 % at the middle of the last 2 s (blur 9 px), then 20 → 100 % before the film ends
+  if (x > 0) { vid.style.filter = `blur(${(BLUR * k).toFixed(2)}px)`; vid.style.transform = `scale(${(1 + SCALE * k).toFixed(4)})`; }
+  if (x >= .5) showEnd();                                   // the headline arrives together with the strongest part of the blur
+  if (x >= 1 || vid.ended) { done = true; showEnd(); vid.style.filter = vid.style.transform = ''; return; }
+  requestAnimationFrame(tick);
 }
-vid.addEventListener('playing', () => requestAnimationFrame(watchEnd));
-vid.addEventListener('ended', showEnd);
+vid.addEventListener('playing', () => requestAnimationFrame(tick));
+vid.addEventListener('ended', () => { done = true; showEnd(); vid.style.filter = vid.style.transform = ''; });
 function playHero() {
   if (!vid || ended) return;
   if (reducedMotion() || phoneStill()) return;
