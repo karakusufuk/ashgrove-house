@@ -7,11 +7,11 @@ export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)'
 
 /* ---------- header logo line: draws itself on every page load ---------- */
 export function drawLogo() {
-  const l = $('.hdr .logo');
-  if (!l) return;
-  l.classList.remove('draw');
-  void l.offsetWidth;
-  l.classList.add('draw');
+  $$('.hdr .logo, .hero-logo').forEach(l => {
+    l.classList.remove('draw');
+    void l.offsetWidth;
+    l.classList.add('draw');
+  });
 }
 
 /* ---------- toast ---------- */

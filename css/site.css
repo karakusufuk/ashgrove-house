@@ -37,8 +37,8 @@ figure{margin:0}
 .logo svg{position:absolute;left:-6px;top:-4px;width:calc(100% + 4px);height:30px;z-index:0;overflow:visible}
 .logo svg path{fill:none;stroke:var(--rose);stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round}
 /* the header line draws itself each time a page opens */
-.js .hdr .logo svg path{stroke-dasharray:1;stroke-dashoffset:1}
-.js .hdr .logo.draw svg path{animation:lgdraw 1.6s cubic-bezier(.45,0,.25,1) .1s forwards}
+.js .hdr .logo svg path,.js .hero-logo svg path{stroke-dasharray:1;stroke-dashoffset:1}
+.js .hdr .logo.draw svg path,.js .hero-logo.draw svg path{animation:lgdraw 1.6s cubic-bezier(.45,0,.25,1) .1s forwards}
 @keyframes lgdraw{to{stroke-dashoffset:0}}
 .navg{display:flex;gap:8px;align-items:stretch}
 .nav{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--ink);border-radius:0 var(--r) 0 var(--r)}
@@ -368,21 +368,41 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 .intro.fade .ip{opacity:0}
 .intro-on .intro.done,.intro.done{display:none}
 
-.hero{padding-top:calc(var(--hh) + 28px);padding-bottom:96px}
-.hero .wrap{container-type:inline-size}
-.hero-frame{height:clamp(280px,calc(100vh - 372px),560px);overflow:hidden;background:#e9e9e7}
-@media (min-width:901px){
-  /* the gap under the header (28 px) equals the gap under the video; only the top edge of the headline shows on the first screen */
-  .hero-frame{height:max(320px,calc(100vh - var(--hh) - 56px))}
-  .hero h1{margin-top:6px}
-}
-.hero-frame video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 18%}
-/* the headline fills the frame on one line: sized in CSS from the Anton width ratio (so nothing shifts when the font arrives), then refined by js/home.js */
-.hero h1{--hw:1126;font-size:min(150px,calc(100cqw * 100 / var(--hw) - .2px));margin:34px 0 24px;width:max-content}
-.hero-sub{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px;align-items:center}
-.hero-sub .acts{display:flex;align-items:center;gap:26px;justify-self:end}
-.next{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted);white-space:nowrap}
-.next i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--latin))}
+/* home hero (28 Oct): the film sits framed in the middle of the first screen (equal gap on all four sides), three white labels inside it
+   share one inset, film grain + vignette lie over the film only, and the lead / next weekend / button sit under it. */
+.hero{--hg:max(56px,12vh);--hi:clamp(16px,1.8vw,30px);background:var(--paper)}
+.hero-first{height:100vh;height:100svh;padding:var(--hg)}
+.hero-frame{position:relative;height:100%;overflow:hidden;background:#0d1320;isolation:isolate}
+.hero-media{position:absolute;inset:0;overflow:hidden}
+.hero-media video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 18%;transform-origin:50% 50%;transition:filter 3s cubic-bezier(.45,0,.55,1),transform 3.6s cubic-bezier(.25,.6,.3,1)}
+/* the end: the last frame eases into a soft blur and keeps drifting in (the drone never stops dead) */
+.is-ending .hero-media video{filter:blur(9px);transform:scale(1.05)}
+/* film grain (moving) and a slight vignette, over the film only; the labels sit above (z-index 3) */
+.hero-fx{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.hero-fx::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 125% 115% at 50% 50%,rgba(0,0,0,0) 52%,rgba(0,0,0,.36) 100%),linear-gradient(rgba(255,160,80,.045),rgba(255,160,80,.045))}
+.hero-fx::after{content:"";position:absolute;left:-60px;top:-60px;right:-60px;bottom:-60px;opacity:.26;mix-blend-mode:overlay;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='.33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E") 0 0/256px 256px;
+  animation:grain .72s steps(1) infinite}
+@keyframes grain{0%{transform:translate(0,0)}12%{transform:translate(-31px,17px)}25%{transform:translate(22px,-38px)}37%{transform:translate(-14px,-9px)}50%{transform:translate(41px,28px)}62%{transform:translate(-45px,-24px)}75%{transform:translate(9px,44px)}87%{transform:translate(-27px,33px)}}
+.hl{position:absolute;z-index:3;background:#fff;color:var(--ink);border-radius:0 var(--r) 0 var(--r)}
+.hl-logo{left:var(--hi);top:var(--hi);display:flex;align-items:center;padding:20px 30px 18px 32px}
+.hl-logo .logo{margin:0}
+.hero .hl-head{left:var(--hi);bottom:var(--hi);margin:0;padding:.26em .38em .18em;font-size:clamp(36px,5.2vw,90px);line-height:1.02;text-align:left;white-space:nowrap}
+.js .hero .hl-head{opacity:0;transform:translateY(12px);transition:opacity 1.2s ease 1s,transform 1.2s cubic-bezier(.2,.7,.2,1) 1s}
+.js .hero .is-ending .hl-head{opacity:1;transform:none}
+.hl-down{--ds:clamp(56px,5vw,84px);right:var(--hi);bottom:var(--hi);width:var(--ds);height:var(--ds);display:grid;place-items:center;overflow:hidden;transition:background .2s}
+.hl-down:hover{background:var(--soft)}
+.hl-down svg{width:42%;height:42%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;animation:nudge 2s cubic-bezier(.45,0,.35,1) infinite}
+@keyframes nudge{0%{transform:translateY(-95%);opacity:0}30%{opacity:1}70%{opacity:1}100%{transform:translateY(95%);opacity:0}}
+.hero-sub{display:flex;flex-direction:column;align-items:center;text-align:center;gap:26px;padding:56px 24px 72px}
+/* desktop: the block has a fixed height whose fraction (.53125 px) keeps everything from Arrival down on the same sub-pixel grid as before, so it renders pixel-identical */
+@media (min-width:901px){.hero-sub{height:340.53125px;padding-top:60px;padding-bottom:0}}
+.hero-sub .lead{max-width:46ch}
+.next{display:flex;align-items:center;justify-content:center;gap:14px;font-size:clamp(22px,2vw,30px);font-weight:700;line-height:1.3;color:var(--ink)}
+.next svg{width:1.15em;height:1.15em;flex:none;color:var(--rose-d)}
+/* the header stays out of the first screen of the homepage (desktop) and slides in with the first scroll */
+.hdr{transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+@media (min-width:901px){.hero-top .hdr{transform:translateY(-101%);visibility:hidden;transition:transform .5s cubic-bezier(.2,.7,.2,1),visibility 0s linear .5s}}
 
 /* story: the weekend as a timeline. Titles travel up a striped line; day, time and copy fade in place. One step per scroll. */
 .story{position:relative;background:var(--paper)}
@@ -444,7 +464,7 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 .ilist li{display:flex;gap:14px;align-items:center;font-size:16px}
 .ilist svg{width:24px;height:24px;flex:none;color:var(--rose-d)}
 
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{transform:none}.js .hdr .logo svg path{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.hero-fx::after{animation:none!important}.reveal{transform:none}.js .hdr .logo svg path,.js .hero-logo svg path{stroke-dashoffset:0}}
 @media (max-width:1100px){
   .gr{grid-template-columns:150px minmax(0,1fr) 110px 24px}.gr .lf{display:none}
   .card{grid-template-columns:260px minmax(0,1fr);}.cside{grid-column:1/-1}
@@ -460,16 +480,12 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
   .st-g{grid-template-columns:1fr;gap:20px}.st-pin{align-items:flex-start;padding-top:calc(var(--hh) + 24px)}.tl-it .d{font-size:52px}.st-photo{justify-self:start}
   .corp-g{grid-template-columns:1fr}
   .gr{grid-template-columns:1fr;gap:10px}.gr .ns{flex-direction:column;gap:8px}
-  .hero h1{width:auto;font-size:clamp(46px,6.2vw,90px)}
-  .hero-sub{grid-template-columns:1fr}
   .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   .d{white-space:normal}
   .f-g{grid-template-columns:1fr}
   .nav a{padding:0 12px}
 }
 @media (max-width:520px){
-  .hero-sub .acts{flex-direction:column;align-items:flex-start;justify-self:start}
-  .next{white-space:normal}
   .logo b{font-size:12px;letter-spacing:.22em}
   .nav a[data-nav="restaurant"]{display:none}
   .nav a{height:34px;font-size:13px}
@@ -545,9 +561,7 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 @media (max-width:900px){
   :root{--hh:64px;--sec:88px;--dsH:61px}
   .toast{top:calc(var(--hh) + 74px)}
-  /* home: headline on one line filling the frame (as on desktop), the story as a plain timeline */
-  .hero{padding-bottom:64px}
-  .hero h1{width:max-content;font-size:min(150px,calc(100cqw * 100 / var(--hw) - .2px));margin:26px 0 20px}
+  /* home: the story as a plain timeline */
   .story{height:auto!important;padding-block:24px var(--sec)}
   .st-pin{display:none}
   .st-list{display:block}
@@ -659,6 +673,16 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
   .rm.sel{transform:translate(-3px,-3px);box-shadow:3px 3px 0 var(--ink)}
   .legend{gap:12px 20px;margin-top:24px}
 }
+/* home hero on tablet and phone: the header stays, the framed film sits under it, no logo label (the header has the logo) */
+@media (max-width:900px){
+  .hero{--hg:16px;--hi:12px}
+  .hero-first{height:auto;padding:calc(var(--hh) + 14px) var(--hg) 0}
+  .hero-frame{height:min(72svh,560px)}
+  .hl-logo{display:none}
+  .hero .hl-head{font-size:clamp(28px,8.6vw,64px)}
+  .hl-down{--ds:52px}
+  .hero-sub{padding:40px 20px 56px}
+}
 /* phones: the menu button replaces the header pill, the headline sits on two lines */
 @media (max-width:640px){
   .nav{display:none}
@@ -680,7 +704,6 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
   .mnav .small{margin:18px 0 0}
   html.mnav-open,html.mnav-open body{overflow:hidden}
   .hbr{display:inline}
-  .hero h1{width:auto;font-size:min(96px,calc(100cqw * 100 / 668 - .2px));line-height:1.03}
   .modal-in{padding:30px 22px 26px}
   .modal-in h3{font-size:21px;padding-right:30px}
   .cph2{grid-template-columns:1fr;gap:24px}

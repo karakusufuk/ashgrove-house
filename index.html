@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@500;600&family=Manrope:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/site.css">
-<script>(function(){var d=document.documentElement;d.classList.add('js');var seen=false;try{seen=!!sessionStorage.getItem('ashSeen');sessionStorage.setItem('ashSeen','1')}catch(e){}if(!seen&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('intro-on');})();</script>
+<script>(function(){var d=document.documentElement;d.classList.add('js');if(innerWidth>900)d.classList.add('hero-top');var seen=false;try{seen=!!sessionStorage.getItem('ashSeen');sessionStorage.setItem('ashSeen','1')}catch(e){}if(!seen&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('intro-on');})();</script>
 <!--/HEAD-->
 </head>
 <body data-page="home">
@@ -32,14 +32,22 @@
 </div></header>
 <!--/HDR-->
 <main id="main">
-  <section class="hero"><div class="wrap">
-    <div class="hero-frame" id="heroFrame"><video id="heroVid" muted playsinline preload="auto" poster="images/hero-start.jpg" aria-label="Ashgrove House from the air, from an afternoon to a Seisiún night"><source src="images/hero.webm" type="video/webm"><source src="images/hero.mp4" type="video/mp4"></video><script>if(matchMedia("(max-width:760px)").matches){var hv=document.getElementById("heroVid");hv.preload="none";hv.poster="images/hero-end.jpg";[].slice.call(hv.querySelectorAll("source")).forEach(function(s){s.remove()})}</script></div>
-    <h1 class="d" id="heroH">Spa by day.<br class="hbr"> Seisiún by night.</h1>
-    <div class="hero-sub">
-      <p class="lead">Two themed nights with a live act each night, in a Georgian country house in Kilkenny with sixteen rooms upstairs.</p>
-      <div class="acts"><div class="next" id="nextLine"><i></i><span></span></div><a class="btn btn-p" href="weekends/">See the weekends</a></div>
+  <section class="hero" id="hero">
+    <div class="hero-first">
+      <div class="hero-frame" id="heroFrame">
+        <div class="hero-media"><video id="heroVid" muted playsinline preload="auto" poster="images/hero-start.jpg?v=20261028" aria-label="Ashgrove House from the air, from an afternoon to a Seisiún night"><source src="images/hero.mp4?v=20261028" type="video/mp4"><source src="images/hero.webm?v=20261028" type="video/webm"></video><script>if(matchMedia("(max-width:760px)").matches){var hv=document.getElementById("heroVid");hv.preload="none";hv.poster="images/hero-end.jpg?v=20261028";[].slice.call(hv.querySelectorAll("source")).forEach(function(s){s.remove()})}</script></div>
+        <div class="hero-fx" aria-hidden="true"></div>
+        <div class="hl hl-logo" aria-hidden="true"><span class="logo hero-logo"><svg viewBox="0 0 240 30" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 27 C10 25 18 20 28 14 C33 11 37 13 42 16 C48 19 54 10 62 5 C68 2 73 4 79 9 C86 15 92 14 98 11 C104 8 109 10 114 14 C122 20 130 22 138 15 C145 9 151 4 158 4 C165 4 170 10 176 14 C183 19 190 17 197 13 C205 9 212 12 220 18 C226 22 232 25 238 27"/></svg><b>Ashgrove House</b></span></div>
+        <h1 class="hl hl-head d" id="heroH">Spa by day.<br>Seisiún by night.</h1>
+        <button class="hl hl-down" id="heroDown" type="button" aria-label="Scroll down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M5.5 12.5 12 19l6.5-6.5"/></svg></button>
+      </div>
     </div>
-  </div></section>
+    <div class="hero-sub" id="heroSub">
+      <p class="lead">Two themed nights with a live act each night, in a Georgian country house in Kilkenny with sixteen rooms upstairs.</p>
+      <div class="next" id="nextLine"><svg data-i="calendar"></svg><span></span></div>
+      <a class="btn btn-p" href="weekends/">See the weekends</a>
+    </div>
+  </section>
 
   <section class="story" id="story" aria-label="A Seisiún weekend, hour by hour"><div class="st-pin"><div class="wrap st-g">
     <div class="tl" id="tl">

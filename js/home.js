@@ -1,46 +1,53 @@
-// Home: intro, hero film, hero headline fit, "Next" line.
+// Home: intro, hero film, hero header/scroll stops, "Next" line.
 import { $, $$, drawLogo, reducedMotion, swapPh } from './site.js';
 import { W, lbl, rng, TC, photoOf, ALL_PHOTOS, pp, rl, eur, DIM } from './data.js';
-import { registerHost, absY } from './paced.js';
+import { registerHost, absY, pageStep } from './paced.js';
 
 const vid = $('#heroVid');
+const frame = $('#heroFrame');
 const root = document.documentElement;
+const V = '?v=20261028';
 
-/* ---------- the hero film runs once from afternoon to night and rests on the last frame ---------- */
-const phoneStill = () => matchMedia('(max-width:760px)').matches;   // phones: the night frame only, the 4 MB film is never fetched
+/* ---------- the hero film runs once from afternoon to night; its last frame eases into a blur and the headline fades in over it ---------- */
+const phoneStill = () => matchMedia('(max-width:760px)').matches;   // phones: the night frame only, the 5 MB film is never fetched
+let ended = false;
+function showEnd() {                                        // idempotent: the final state is never left again
+  if (ended) return;
+  ended = true;
+  frame.classList.add('is-ending');
+}
+function watchEnd() {                                       // starts the blur a moment before the last frame so the picture never stops dead
+  if (ended) return;
+  if (vid.duration && vid.duration - vid.currentTime <= .5) showEnd(); else requestAnimationFrame(watchEnd);
+}
+vid.addEventListener('playing', () => requestAnimationFrame(watchEnd));
+vid.addEventListener('ended', showEnd);
 function playHero() {
-  if (!vid) return;
+  if (!vid || ended) return;
   if (reducedMotion() || phoneStill()) return;
   try { vid.currentTime = 0; } catch (e) {}
   const p = vid.play();
-  if (p && p.catch) p.catch(() => {});
+  if (p && p.catch) p.catch(() => { vid.poster = 'images/hero-end.jpg' + V; showEnd(); });   // autoplay refused: show the night frame, blurred, with the headline
 }
-if (vid && (reducedMotion() || phoneStill())) {          // no playback: the night frame is shown as the poster and the film is never fetched
-  vid.poster = 'images/hero-end.jpg';
+if (reducedMotion() || phoneStill()) {                      // no playback: the night frame is shown blurred, with the headline; the film is never fetched
+  vid.poster = 'images/hero-end.jpg' + V;
   vid.preload = 'none';
   vid.querySelectorAll('source').forEach(s => s.remove());
   vid.load();
+  requestAnimationFrame(() => requestAnimationFrame(showEnd));
 }
 
-/* ---------- headline: one line, filling the frame ---------- */
-function fitHero() {
-  const h = $('#heroH');
-  if (!h) return;
-  if (innerWidth < 900) { h.style.fontSize = ''; return; }
-  h.style.fontSize = '100px';
-  const k = $('#heroFrame').clientWidth / h.scrollWidth;
-  h.style.fontSize = Math.min(150, 100 * k - .2) + 'px';
-}
-addEventListener('resize', fitHero);
-fitHero();
-if (document.fonts) document.fonts.ready.then(fitHero);
+/* ---------- header: absent on the first screen (desktop), slides in with the first scroll ---------- */
+const wide = () => innerWidth > 900;
+const headerState = () => root.classList.toggle('hero-top', wide() && scrollY < 24);
+addEventListener('scroll', headerState, { passive: true });
+addEventListener('resize', headerState);
+headerState();
 
 /* ---------- "Next: …" ---------- */
 {
   const w = W[0];
-  const n = $('#nextLine');
-  n.style.setProperty('--c', TC[w.main]);
-  n.querySelector('span').textContent = `Next: ${lbl(w)} · ${rng(w)}`;
+  $('#nextLine span').textContent = `Next: ${lbl(w)} · ${rng(w)}`;
 }
 
 /* ---------- intro: black, then the frame opens to 35 mm, then the page arrives ---------- */
@@ -64,9 +71,9 @@ function intro() {
 }
 intro();
 
-// coming back to the homepage (back button, cached page): the film starts again from the first frame
+// coming back to the homepage (back button, cached page): the film carries on, an ended film stays as it is
 addEventListener('pageshow', e => {
-  if (e.persisted) { drawLogo(); playHero(); }
+  if (e.persisted) drawLogo();
 });
 
 /* ---------- upcoming weekends: one picture, three slim guide rows ---------- */
@@ -148,7 +155,17 @@ function storyStep() {
   storyText(MOM[i], first);
 }
 const stepTop = i => { const len = (story.offsetHeight - innerHeight) / MOM.length; return Math.round(absY(story) + len * (i + .5)); };
-registerHost({ el: story, n: MOM.length, enabled: () => innerWidth > 900, pos: stepTop, down: () => ({ y: absY(story) + story.offsetHeight, host: null }), up: () => ({ y: 0, host: null }) });
+/* the first screen has two stops: the framed film (0) and the centred block under it; the next gesture lands on Arrival, and Arrival's way up leads back to the block */
+const hero = $('#hero'), heroSub = $('#heroSub');
+const heroStop = () => Math.max(0, Math.min(absY(heroSub) + heroSub.offsetHeight - innerHeight, absY(heroSub) - 96));
+registerHost({ el: hero, n: 2, enabled: wide, pos: i => (i ? heroStop() : 0), down: () => ({ y: stepTop(0), host: story }), up: () => ({ y: 0, host: null }) });
+registerHost({ el: story, n: MOM.length, enabled: () => innerWidth > 900, pos: stepTop, down: () => ({ y: absY(story) + story.offsetHeight, host: null }), up: () => ({ y: heroStop(), host: hero }) });
+$('#heroDown').addEventListener('click', e => {
+  if (e.detail) e.currentTarget.blur();                      // a mouse click leaves no focus on the button, so the keys keep their paced steps
+  if (!reducedMotion() && pageStep(1)) return;
+  const y = heroStop();
+  scrollTo({ top: scrollY < y - 2 ? y : absY(story), behavior: reducedMotion() ? 'auto' : 'smooth' });
+});
 addEventListener('resize', layoutStory);
 let stk = 0;
 addEventListener('scroll', () => { if (!stk) { stk = 1; requestAnimationFrame(() => { storyStep(); stk = 0; }); } }, { passive: true });

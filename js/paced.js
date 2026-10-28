@@ -44,6 +44,14 @@ export function glide(y, host) {
 function afterGlide() { if (!WG.pend) return; const d = WG.pend; WG.pend = 0; const h = hostAt(); if (h && h.el === WG.host) stepBy(h, d); }
 function nearest(h) { let k = 0, b = 1e9; for (let i = 0; i < h.n; i++) { const d = Math.abs(h.pos(i) - scrollY); if (d < b) { b = d; k = i; } } return k; }
 function stepBy(h, dir) { const t = nearest(h) + dir; if (t >= 0 && t < h.n) glide(h.pos(t), h.el); else { const x = dir > 0 ? h.down() : h.up(); glide(x.y, x.host); } }
+// one gesture's worth of movement from code (the hero's arrow button); false when no host is under the page position
+export function pageStep(dir) {
+  const h = hostAt();
+  if (!h) return false;
+  if (WG.absorb && performance.now() < WG.until) return true;
+  WG.host = h.el; stepBy(h, dir);
+  return true;
+}
 export function paced(e, dir, fresh) {
   const now = performance.now();
   if (WG.absorb) { if (!fresh || now < WG.until) { e.preventDefault(); if (fresh) WG.pend = dir; return; } WG.absorb = false; }
@@ -59,7 +67,10 @@ export function paced(e, dir, fresh) {
     return;
   }
   e.preventDefault();
-  if (WG.host !== h.el) { glide(h.pos(nearest(h)), h.el); return; }   // entering a host: snap to the nearest step
+  if (WG.host !== h.el) {                                   // entering a host: snap to the nearest step (unless already exactly on one)
+    if (Math.abs(h.pos(nearest(h)) - scrollY) > 2) { glide(h.pos(nearest(h)), h.el); return; }
+    WG.host = h.el;
+  }
   if (fresh) stepBy(h, dir);
 }
 if (!reducedMotion()) {
