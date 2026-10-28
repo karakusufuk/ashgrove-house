@@ -29,9 +29,24 @@ function tick() {
 }
 vid.addEventListener('playing', () => requestAnimationFrame(tick));
 vid.addEventListener('ended', () => { done = true; showEnd(); vid.style.filter = vid.style.transform = ''; });
-function playHero() {
+/* the film is fetched completely first and played from memory, so it can never stall while photos and fonts share the line;
+   the intro curtain and the still first frame cover the wait, and the other photo preloads wait until the film is in */
+const filmReady = new Promise(res => {
+  if (!vid || reducedMotion() || phoneStill()) return res(false);
+  const src = [...vid.querySelectorAll('source')].find(x => vid.canPlayType(x.type));
+  const plain = () => { vid.preload = 'auto'; vid.load(); res(true); };
+  if (!src || !window.fetch || !URL.createObjectURL) return plain();
+  fetch(src.src).then(r => { if (!r.ok) throw 0; return r.blob(); }).then(b => {
+    vid.removeAttribute('preload'); vid.src = URL.createObjectURL(b); vid.load();
+    vid.addEventListener('canplaythrough', () => res(true), { once: true });
+    setTimeout(() => res(true), 3000);
+  }).catch(plain);
+});
+async function playHero() {
   if (!vid || ended) return;
   if (reducedMotion() || phoneStill()) return;
+  await Promise.race([filmReady, new Promise(r => setTimeout(r, 20000))]);
+  if (ended) return;
   try { vid.currentTime = 0; } catch (e) {}
   const p = vid.play();
   if (p && p.catch) p.catch(() => { vid.poster = 'images/hero-end.jpg' + V; showEnd(); });   // autoplay refused: show the night frame, blurred, with the headline
@@ -85,7 +100,7 @@ addEventListener('pageshow', e => {
 
 /* ---------- upcoming weekends: one picture, three slim guide rows ---------- */
 let calCur = 1, calFront = 'A';
-ALL_PHOTOS.forEach(n => { const im = new Image(); im.src = `images/${n}.jpg`; });   // all theme photos preloaded
+filmReady.then(() => { ALL_PHOTOS.forEach(n => { const im = new Image(); im.src = `images/${n}.jpg`; }); });   // all theme photos preloaded (after the film is in)
 function setCalLab(w) {
   const l = $('#calLab');
   l.style.setProperty('--c', TC[w.main]);
