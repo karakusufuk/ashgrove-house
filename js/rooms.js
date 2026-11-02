@@ -3,8 +3,9 @@
 import { $, $$, toast } from './site.js';
 import { W, TC, rng, ROOMS, TYP, roomById, roomTaken, priceLine, iso, add, today, fromIso, isWeekendNight } from './data.js';
 import { mountBands } from './bands.js';
+import { combobox, closeCombobox } from './combobox.js';
 
-export const sel = { w: null, start: null, n: 2 };          // the chosen dates: a weekend number, or a weeknight check-in + nights
+export const sel = { w: null, start: null, n: 2, nSet: false };   // the chosen dates: a weekend number, or a weeknight check-in + nights (nSet: nights picked by the visitor)
 export const selection = () => sel.w ? { w: sel.w } : sel.start ? { start: sel.start, n: sel.n } : null;
 export const taken = r => roomTaken(r, selection());
 const listeners = [];
@@ -40,10 +41,12 @@ function buildPlan() {
 }
 
 /* ---------- the date strip ---------- */
+const nights = n => `${n} night${n > 1 ? 's' : ''}`;
 function strip() {
+  closeCombobox();
   const focused = document.activeElement && document.activeElement.id;
   $('#dstrip').innerHTML = `<span class="dl">Weekends</span>` + W.map(w => `<button class="dchip ${sel.w === w.n ? 'on' : ''}" type="button" data-w="${w.n}" style="--c:${TC[w.main]}" aria-pressed="${sel.w === w.n}"><i></i>${rng(w)}${w.rooms ? '' : '<span class="full">Full</span>'}</button>`).join('') +
-    `<span class="dsep"></span><span class="wn">Weeknights <input type="date" id="wnd" min="${iso(add(today, 1))}" value="${sel.start ? iso(sel.start) : ''}" aria-label="Check-in"><select id="wnn" aria-label="Nights">${[1, 2, 3, 4].map(n => `<option ${n === sel.n ? 'selected' : ''} value="${n}">${n} night${n > 1 ? 's' : ''}</option>`).join('')}</select></span>${sel.w || sel.start ? '<button class="clr" id="clrd" type="button">Clear dates</button>' : ''}`;
+    `<span class="dsep"></span><span class="wn">Weeknights <input type="date" id="wnd" min="${iso(add(today, 1))}" value="${sel.start ? iso(sel.start) : ''}" aria-label="Check-in"><button class="cbx" id="wnn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Nights"><span>${nights(sel.n)}</span><svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5"/></svg></button></span>${sel.w || sel.start ? '<button class="clr" id="clrd" type="button">Clear dates</button>' : ''}`;
   $$('.dchip').forEach(b => b.addEventListener('click', () => { sel.w = sel.w === +b.dataset.w ? null : +b.dataset.w; sel.start = null; applyDates(); }));
   $('#wnd').addEventListener('change', e => {
     if (!e.target.value) { sel.start = null; applyDates(); return; }
@@ -51,7 +54,8 @@ function strip() {
     if (isWeekendNight(d)) { toast('Friday and Saturday nights are Seisiún weekends'); sel.start = null; applyDates(); return; }
     sel.start = d; sel.w = null; applyDates();
   });
-  $('#wnn').addEventListener('change', e => { sel.n = +e.target.value; applyDates(); });
+  combobox($('#wnn'), { host: $('#dstrip').parentNode, scroller: $('#dstrip'), options: [1, 2, 3, 4].map(n => ({ v: n, t: nights(n) })), value: sel.n, marked: sel.nSet,
+    onPick: n => { sel.n = n; sel.nSet = true; applyDates(); } });
   const c = $('#clrd'); if (c) c.addEventListener('click', () => { sel.w = null; sel.start = null; applyDates(); });
   const on = $('.dchip.on'); if (on) on.scrollIntoView({ inline: 'center', block: 'nearest' });
   if (focused && $('#' + focused)) $('#' + focused).focus({ preventScroll: true });
