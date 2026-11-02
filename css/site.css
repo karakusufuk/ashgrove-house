@@ -764,26 +764,33 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 html{-webkit-tap-highlight-color:transparent}
 @media (hover:none){.hl-down:hover{background:#fff}}
 /* phones */
-/* story as a clock timeline: the cards hold day, time, title and copy, centred; a faint, softly blurred clock sits at the centre of
-   the screen behind them while the section is on screen, and home.js turns its hands to each card's time as the card reaches the centre */
+/* story as a clock timeline: every moment keeps its print photo, as on tablet. A small, flat clock (a thin ring and two hands, white with
+   a hairline dark edge so it reads on light and dark photos; no blur, no shadow, no backing, the photo shows through the ring) sits at the
+   centre of the screen in front of the photos while the section is on screen, and home.js turns its hands to each moment's time as the
+   moment reaches the centre. The copy hangs under the photo outside the flow, and a moment has the same space above and below, so its
+   centre is its photo's centre: the hands arrive on the middle of the photo. */
 .st-clock{display:none}
+.st-tx{display:contents}                                   /* the copy's wrapper only takes part in the layout on phones */
 @media (max-width:760px){
   .story{isolation:isolate}
-  .st-list .eyebrow{text-align:center}
-  .st-list ol{position:relative;z-index:1}
-  .st-list li,.st-list li:last-child{align-items:center;text-align:center;min-height:76svh;padding:24px 0}
-  .st-list .st-ph{display:none}
-  .st-when{justify-content:center}
-  .st-list p{margin:0 auto}
-  .st-clock{--ck:min(86vw,52svh,400px);display:block;position:fixed;left:50%;top:50%;z-index:0;width:var(--ck);height:var(--ck);margin:calc(var(--ck) / -2) 0 0 calc(var(--ck) / -2);color:var(--ink);opacity:0;transition:opacity .7s ease;pointer-events:none}
+  .st-list{--stP:192px}
+  .st-list li,.st-list li:last-child{padding-block:var(--stP)}
+  .st-list .st-ph{margin:0}
+  .st-tx{display:block;position:relative;top:24px;height:0}
+  .st-clock{--ck:72px;--ckE:rgba(27,28,30,.72);display:block;position:fixed;left:50%;top:50%;z-index:2;width:var(--ck);height:var(--ck);margin:calc(var(--ck) / -2) 0 0 calc(var(--ck) / -2);opacity:0;transition:opacity .7s ease;pointer-events:none}
   .st-clock.on{opacity:1}
-  .ck-face{position:absolute;inset:0;width:100%;height:100%;fill:rgba(27,28,30,.022);stroke:currentColor;stroke-opacity:.13;stroke-width:.7;stroke-linecap:round;filter:blur(1.2px)}
-  .ck-face line{stroke-width:1.1}
-  .ck-face line.q{stroke-width:1.6;stroke-opacity:.17}
-  .ck-h,.ck-m{position:absolute;left:50%;bottom:50%;border-radius:999px;background:currentColor;opacity:.14;transform-origin:50% 100%;will-change:transform;filter:blur(1.4px)}
-  .ck-h{width:calc(var(--ck) * .028);height:calc(var(--ck) * .25);margin-left:calc(var(--ck) * -.014);transform:rotate(120deg)}
-  .ck-m{width:calc(var(--ck) * .018);height:calc(var(--ck) * .38);margin-left:calc(var(--ck) * -.009);transform:rotate(0deg)}
-  .ck-pin{position:absolute;left:50%;top:50%;width:calc(var(--ck) * .045);height:calc(var(--ck) * .045);margin:calc(var(--ck) * -.0225) 0 0 calc(var(--ck) * -.0225);border-radius:50%;background:currentColor;opacity:.16;filter:blur(1.2px)}
+  .st-clock svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke:#fff;stroke-linecap:round}
+  .st-clock svg *{vector-effect:non-scaling-stroke}
+  .st-clock .e{stroke:var(--ckE)}
+  .st-clock>svg circle{stroke-width:1.25px}
+  .st-clock>svg circle.e{stroke-width:2.25px}
+  .ck-h,.ck-m{position:absolute;inset:0;transform-origin:50% 50%}
+  .ck-h{transform:rotate(120deg)}
+  .ck-h path{stroke-width:2.6px}
+  .ck-h path.e{stroke-width:3.6px}
+  .ck-m path{stroke-width:1.6px}
+  .ck-m path.e{stroke-width:2.6px}
+  .st-clock .ck-pin{fill:#fff;stroke:var(--ckE);stroke-width:1px;paint-order:stroke}
 }
 /* the site's own dropdown (js/combobox.js), first used for the weeknight "Nights" picker: no native <select>. The button takes the
    height of the date field beside it, the arrow sits at its vertical centre; the list hangs under it, square like the fields */

@@ -251,12 +251,14 @@ const its = $$('.tl-it'), phs = $$('#stPh img');
 story.style.height = `calc(${MOM.length * PER}vh + 100vh)`;
 /* ≤ 900 px: the same eight moments as a plain timeline (the pinned, one-step-per-scroll version needs a desktop-sized
    screen; on a phone it clipped the copy). CSS shows one or the other. */
-story.insertAdjacentHTML('beforeend', `<div class="st-list wrap"><div class="eyebrow">A Seisiún weekend, hour by hour</div><ol>${MOM.map(m => `<li><figure class="st-ph"><img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async"></figure><div class="st-when"><b>${m.day}</b><span>${m.h}</span></div><h3 class="d">${m.title}</h3><p>${m.txt}</p></li>`).join('')}</ol></div>`);
-/* ≤ 760 px (2 Nov): the moments as a clock timeline. A faint, softly blurred clock (hour and minute hands, no numbers) stays at the
-   centre of the screen behind the copy while the section is on screen; as each moment's card reaches the centre the hands arrive at
-   its time. The hands only go forward and take the shortest forward way: the minute hand never makes an extra turn (21:00 → 09:00
-   leaves both hands where they are), the hour hand goes to the hour. Between two cards the hands follow the scroll position. */
-$('.st-list').insertAdjacentHTML('afterbegin', `<div class="st-clock" id="stClock" aria-hidden="true"><svg class="ck-face" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48.5"/>${Array.from({ length: 12 }, (_, i) => `<line x1="50" y1="${i % 3 ? 5.5 : 5}" x2="50" y2="${i % 3 ? 9.5 : 12}" transform="rotate(${i * 30} 50 50)"${i % 3 ? '' : ' class="q"'}/>`).join('')}</svg><i class="ck-h"></i><i class="ck-m"></i><b class="ck-pin"></b></div>`);
+story.insertAdjacentHTML('beforeend', `<div class="st-list wrap"><div class="eyebrow">A Seisiún weekend, hour by hour</div><ol>${MOM.map(m => `<li><figure class="st-ph"><img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async"></figure><div class="st-tx"><div class="st-when"><b>${m.day}</b><span>${m.h}</span></div><h3 class="d">${m.title}</h3><p>${m.txt}</p></div></li>`).join('')}</ol></div>`);
+/* ≤ 760 px (2 Nov): the moments as a clock timeline. A small, flat clock (a thin ring, hour and minute hands, no numbers) stays at the
+   centre of the screen in front of the photos while the section is on screen; as each moment's card reaches the centre the hands arrive
+   at its time. The hands only go forward and take the shortest forward way: the minute hand never makes an extra turn (21:00 → 09:00
+   leaves both hands where they are), the hour hand goes to the hour. Between two cards the hands follow the scroll position.
+   Every part is white with a hairline dark edge (a darker stroke drawn under the white one), so it reads on light and dark photos. */
+const ckSvg = body => `<svg viewBox="0 0 100 100">${body}</svg>`, ckLine = y => `<path class="e" d="M50 50V${y}"/><path d="M50 50V${y}"/>`;
+$('.st-list').insertAdjacentHTML('afterbegin', `<div class="st-clock" id="stClock" aria-hidden="true">${ckSvg('<circle class="e" cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="46"/>')}<i class="ck-h">${ckSvg(ckLine(26))}</i><i class="ck-m">${ckSvg(ckLine(12) + '<circle class="ck-pin" cx="50" cy="50" r="3.4"/>')}</i></div>`);
 const ck = $('#stClock'), ckH = $('.ck-h', ck), ckM = $('.ck-m', ck), stLis = $$('.st-list li');
 const ckOn = () => matchMedia('(max-width:760px)').matches;
 const CK_H = [], CK_M = [];                                 // the hands' angles at each moment, counted forward from Arrival
