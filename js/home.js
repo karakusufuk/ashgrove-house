@@ -263,7 +263,7 @@ story.insertAdjacentHTML('beforeend', `<div class="st-list wrap"><div class="eye
    saturated, so the photos read as seen through thick glass. Where the browser can move elements with the scroll itself (a scroll
    timeline, as in iOS Safari 26), the copy is moved that way, in step with Safari's own scrolling and even while this page is busy;
    without one (or with reduced motion) it follows the scroll from here. */
-const ckSvg = body => `<svg viewBox="0 0 100 100">${body}</svg>`, ckLine = y => `<path class="e" d="M50 50V${y}"/><path d="M50 50V${y}"/>`;
+const ckSvg = body => `<svg viewBox="0 0 100 100">${body}</svg>`, ckLine = y => `<path d="M50 50V${y}"/>`;
 const stList = $('.st-list'), stLis = $$('li', stList), stImgs = $$('img', stList), ckRun = stList.cloneNode(true);
 ckRun.classList.add('st-run');
 ckRun.inert = true;

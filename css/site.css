@@ -789,19 +789,16 @@ html{-webkit-tap-highlight-color:transparent}
   .ck-lens .st-run{top:calc(var(--stTop,0px) - 50%)}       /* the layer starts a quarter down the screen: 50 % of its height */
   .st-clock svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke:#fff;stroke-linecap:round}
   .st-clock svg *{vector-effect:non-scaling-stroke}
-  .st-clock .e{stroke:var(--ckE)}
   /* the glass's edge, all inside the disc: a faint dark hairline at the very edge (glass seen on white paper), then light catching the
      glass, a thin bright rim brightest at the top left, and a soft band just inside it; nothing outside the disc, no shadow */
   .st-clock .ck-edge{stroke:rgba(27,28,30,.16);stroke-width:.75px}
   .st-clock .ck-rim{stroke:url(#ckRim);stroke-width:1px}
   .st-clock .ck-soft{stroke-opacity:.16;stroke-width:4px}
-  .ck-h,.ck-m{position:absolute;inset:0;transform-origin:50% 50%}
+  .ck-h,.ck-m{position:absolute;inset:0;transform-origin:50% 50%;opacity:.8}   /* white, 20 % transparent, no outline */
   .ck-h{transform:rotate(120deg)}
   .ck-h path{stroke-width:3.9px}
-  .ck-h path.e{stroke-width:5.4px}
   .ck-m path{stroke-width:2.4px}
-  .ck-m path.e{stroke-width:3.9px}
-  .st-clock .ck-pin{fill:#fff;stroke:var(--ckE);stroke-width:1.5px;paint-order:stroke}
+  .st-clock .ck-pin{fill:#fff;stroke:none}
 }
 /* where the browser moves elements with the scroll itself, the glass's copy follows a scroll timeline (translateY = −scroll, so it sits
    exactly where the list would, then 10 % larger); reduced motion or no scroll timeline: home.js moves it */
