@@ -252,14 +252,32 @@ story.style.height = `calc(${MOM.length * PER}vh + 100vh)`;
 /* ≤ 900 px: the same eight moments as a plain timeline (the pinned, one-step-per-scroll version needs a desktop-sized
    screen; on a phone it clipped the copy). CSS shows one or the other. */
 story.insertAdjacentHTML('beforeend', `<div class="st-list wrap"><div class="eyebrow">A Seisiún weekend, hour by hour</div><ol>${MOM.map(m => `<li><figure class="st-ph"><img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async"></figure><div class="st-tx"><div class="st-when"><b>${m.day}</b><span>${m.h}</span></div><h3 class="d">${m.title}</h3><p>${m.txt}</p></div></li>`).join('')}</ol></div>`);
-/* ≤ 760 px (2 Nov): the moments as a clock timeline. A small, flat clock (a thin ring, hour and minute hands, no numbers) stays at the
+/* ≤ 760 px (2 Nov): the moments as a clock timeline. A small clock (hour and minute hands on a glass disc, no numbers) stays at the
    centre of the screen in front of the photos while the section is on screen; as each moment's card reaches the centre the hands arrive
-   at its time. The hands only go forward and take the shortest forward way: the minute hand never makes an extra turn (21:00 → 09:00
-   leaves both hands where they are), the hour hand goes to the hour. Between two cards the hands follow the scroll position.
-   Every part is white with a hairline dark edge (a darker stroke drawn under the white one), so it reads on light and dark photos. */
+   at its time. Between two cards the hands follow the scroll position on an ease-in-out curve that starts and ends with no speed and no
+   jolt (quintic), so they start heavily and settle on the time. They only go forward: from a whole hour to a whole hour the minute hand
+   makes exactly one full turn (the hour hand goes the shortest forward way to its hour in the same movement; 21:00 → 09:00 leaves it on
+   9); when either time has minutes the minute hand goes straight to the new minute. Hands: white with a hairline dark edge (a darker
+   stroke drawn under the white one), so they read on light and dark photos.
+   The glass: inside the disc a copy of the moments is shown 10 % larger around the disc's centre, softened, a little brighter and more
+   saturated, so the photos read as seen through thick glass. Where the browser can move elements with the scroll itself (a scroll
+   timeline, as in iOS Safari 26), the copy is moved that way, in step with Safari's own scrolling and even while this page is busy;
+   without one (or with reduced motion) it follows the scroll from here. */
 const ckSvg = body => `<svg viewBox="0 0 100 100">${body}</svg>`, ckLine = y => `<path class="e" d="M50 50V${y}"/><path d="M50 50V${y}"/>`;
-$('.st-list').insertAdjacentHTML('afterbegin', `<div class="st-clock" id="stClock" aria-hidden="true">${ckSvg('<circle class="e" cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="46"/>')}<i class="ck-h">${ckSvg(ckLine(26))}</i><i class="ck-m">${ckSvg(ckLine(12) + '<circle class="ck-pin" cx="50" cy="50" r="3.4"/>')}</i></div>`);
-const ck = $('#stClock'), ckH = $('.ck-h', ck), ckM = $('.ck-m', ck), stLis = $$('.st-list li');
+const stList = $('.st-list'), stLis = $$('li', stList), stImgs = $$('img', stList), ckRun = stList.cloneNode(true);
+ckRun.classList.add('st-run');
+ckRun.inert = true;
+// the copy's photos are set as soon as the page's own (lazy) photos have loaded, then come from the cache
+$$('img', ckRun).forEach((im, k) => {
+  const real = stImgs[k], set = () => { im.src = real.currentSrc || real.src; };
+  im.removeAttribute('src'); im.removeAttribute('loading');
+  if (real.complete && real.naturalWidth) set(); else real.addEventListener('load', set, { once: true });
+});
+stList.insertAdjacentHTML('afterbegin', `<div class="st-clock" id="stClock" aria-hidden="true"><div class="ck-glass"><div class="ck-lens"></div></div>${ckSvg('<defs><linearGradient id="ckRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity=".75"/></linearGradient></defs><circle class="ck-soft" cx="50" cy="50" r="42.55"/><circle class="ck-rim" cx="50" cy="50" r="44.85"/><circle class="ck-edge" cx="50" cy="50" r="45.65"/>')}<i class="ck-h">${ckSvg(ckLine(26))}</i><i class="ck-m">${ckSvg(ckLine(12) + '<circle class="ck-pin" cx="50" cy="50" r="3.4"/>')}</i></div>`);
+const ck = $('#stClock'), ckH = $('.ck-h', ck), ckM = $('.ck-m', ck);
+$('.ck-lens', ck).appendChild(ckRun);
+const stTimeline = CSS.supports('animation-timeline: scroll()'), stCalm = matchMedia('(prefers-reduced-motion: reduce)');
+let stAt = '';
 const ckOn = () => matchMedia('(max-width:760px)').matches;
 const CK_H = [], CK_M = [];                                 // the hands' angles at each moment, counted forward from Arrival
 MOM.forEach((m, i) => {
@@ -267,7 +285,7 @@ MOM.forEach((m, i) => {
   if (!i) { CK_H.push(h * 30); CK_M.push(mm * 6); return; }
   const [ph, pm] = MOM[i - 1].h.split(':').map(Number), p = ph % 12 + pm / 60;
   CK_H.push(CK_H[i - 1] + ((h - p) % 12 + 12) % 12 * 30);
-  CK_M.push(CK_M[i - 1] + ((mm - pm) % 60 + 60) % 60 * 6);
+  CK_M.push(CK_M[i - 1] + (!mm && !pm ? 360 : ((mm - pm) % 60 + 60) % 60 * 6));
 });
 function clockStep() {
   if (!ckOn()) return;
@@ -276,10 +294,14 @@ function clockStep() {
   const c = stLis.map(li => { const r = li.getBoundingClientRect(); return r.top + r.height / 2; });   // each card's centre on screen
   let i = 0;
   while (i < c.length - 1 && c[i + 1] <= mid) i++;
-  const f = i === c.length - 1 ? 0 : Math.min(1, Math.max(0, (mid - c[i]) / (c[i + 1] - c[i]))), e = f * f * (3 - 2 * f);
+  const f = i === c.length - 1 ? 0 : Math.min(1, Math.max(0, (mid - c[i]) / (c[i + 1] - c[i]))), e = f * f * f * (f * (f * 6 - 15) + 10);
   const j = Math.min(i + 1, c.length - 1);
   ckH.style.transform = `rotate(${(CK_H[i] + (CK_H[j] - CK_H[i]) * e).toFixed(2)}deg)`;
   ckM.style.transform = `rotate(${(CK_M[i] + (CK_M[j] - CK_M[i]) * e).toFixed(2)}deg)`;
+  // the copy takes the list's place on the page (top in the document, left, width); the scroll moves it
+  const l = stList.getBoundingClientRect(), at = `${(l.top + scrollY).toFixed(2)},${l.left.toFixed(2)},${l.width.toFixed(2)}`;
+  if (at !== stAt) { stAt = at; const [t, x, w] = at.split(','); stList.style.setProperty('--stTop', t + 'px'); stList.style.setProperty('--stX', x + 'px'); stList.style.setProperty('--stW', w + 'px'); }
+  if (!stTimeline || stCalm.matches) ckRun.style.transform = `translate3d(0,${-scrollY}px,0)`;
 }
 let cks = 0;
 addEventListener('scroll', () => { if (!cks) { cks = 1; requestAnimationFrame(() => { clockStep(); cks = 0; }); } }, { passive: true });

@@ -764,10 +764,10 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 html{-webkit-tap-highlight-color:transparent}
 @media (hover:none){.hl-down:hover{background:#fff}}
 /* phones */
-/* story as a clock timeline: every moment keeps its print photo, as on tablet. A small, flat clock (a thin ring and two hands, white with
-   a hairline dark edge so it reads on light and dark photos; no blur, no shadow, no backing, the photo shows through the ring) sits at the
-   centre of the screen in front of the photos while the section is on screen, and home.js turns its hands to each moment's time as the
-   moment reaches the centre. The copy hangs under the photo outside the flow, and a moment has the same space above and below, so its
+/* story as a clock timeline: every moment keeps its print photo, as on tablet. A small clock (two hands, white with a hairline dark edge so
+   they read on light and dark photos, on a disc of clear glass that magnifies and softens the photos under it; no shadow, no outer glow)
+   sits at the centre of the screen in front of the photos while the section is on screen, and home.js turns its hands to each moment's
+   time as the moment reaches the centre. The copy hangs under the photo outside the flow, and a moment has the same space above and below, so its
    centre is its photo's centre: the hands arrive on the middle of the photo. */
 .st-clock{display:none}
 .st-tx{display:contents}                                   /* the copy's wrapper only takes part in the layout on phones */
@@ -777,20 +777,39 @@ html{-webkit-tap-highlight-color:transparent}
   .st-list li,.st-list li:last-child{padding-block:var(--stP)}
   .st-list .st-ph{margin:0}
   .st-tx{display:block;position:relative;top:24px;height:0}
-  .st-clock{--ck:72px;--ckE:rgba(27,28,30,.72);display:block;position:fixed;left:50%;top:50%;z-index:2;width:var(--ck);height:var(--ck);margin:calc(var(--ck) / -2) 0 0 calc(var(--ck) / -2);opacity:0;transition:opacity .7s ease;pointer-events:none}
+  /* the copy of the moments under the glass (home.js) takes the list's place (--stTop/--stX/--stW) in its layer; the scroll moves it */
+  .st-list.st-run{position:absolute;left:var(--stX,0px);top:var(--stTop,0px);width:var(--stW,100%);max-width:none;margin:0;will-change:transform}
+  .st-clock{--ck:108px;--ckE:rgba(27,28,30,.72);display:block;position:fixed;left:50%;top:50%;z-index:2;width:var(--ck);height:var(--ck);margin:calc(var(--ck) / -2) 0 0 calc(var(--ck) / -2);opacity:0;transition:opacity .7s ease;pointer-events:none}
   .st-clock.on{opacity:1}
+  /* the glass disc: the copy under it lies in a layer over the middle half of the screen (it never reaches the screen's edges), 10 %
+     larger around the screen's centre (the disc's centre), softened, brighter and more saturated, and is cut to the disc; the cut comes
+     after the softening, so the disc's edge stays sharp */
+  .ck-glass{position:absolute;inset:4%}
+  .ck-lens{position:fixed;left:0;right:0;top:25%;bottom:25%;overflow:hidden;background:var(--paper);transform:scale(1.1);transform-origin:50% 50%;filter:blur(3px) brightness(1.08) saturate(1.35);clip-path:circle(calc(var(--ck) * .46 / 1.1) at 50% 50%)}
+  .ck-lens .st-run{top:calc(var(--stTop,0px) - 50%)}       /* the layer starts a quarter down the screen: 50 % of its height */
   .st-clock svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke:#fff;stroke-linecap:round}
   .st-clock svg *{vector-effect:non-scaling-stroke}
   .st-clock .e{stroke:var(--ckE)}
-  .st-clock>svg circle{stroke-width:1.25px}
-  .st-clock>svg circle.e{stroke-width:2.25px}
+  /* the glass's edge, all inside the disc: a faint dark hairline at the very edge (glass seen on white paper), then light catching the
+     glass, a thin bright rim brightest at the top left, and a soft band just inside it; nothing outside the disc, no shadow */
+  .st-clock .ck-edge{stroke:rgba(27,28,30,.16);stroke-width:.75px}
+  .st-clock .ck-rim{stroke:url(#ckRim);stroke-width:1px}
+  .st-clock .ck-soft{stroke-opacity:.16;stroke-width:4px}
   .ck-h,.ck-m{position:absolute;inset:0;transform-origin:50% 50%}
   .ck-h{transform:rotate(120deg)}
-  .ck-h path{stroke-width:2.6px}
-  .ck-h path.e{stroke-width:3.6px}
-  .ck-m path{stroke-width:1.6px}
-  .ck-m path.e{stroke-width:2.6px}
-  .st-clock .ck-pin{fill:#fff;stroke:var(--ckE);stroke-width:1px;paint-order:stroke}
+  .ck-h path{stroke-width:3.9px}
+  .ck-h path.e{stroke-width:5.4px}
+  .ck-m path{stroke-width:2.4px}
+  .ck-m path.e{stroke-width:3.9px}
+  .st-clock .ck-pin{fill:#fff;stroke:var(--ckE);stroke-width:1.5px;paint-order:stroke}
+}
+/* where the browser moves elements with the scroll itself, the glass's copy follows a scroll timeline (translateY = −scroll, so it sits
+   exactly where the list would, then 10 % larger); reduced motion or no scroll timeline: home.js moves it */
+@keyframes stScroll{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-100000px,0)}}
+@supports (animation-timeline:scroll()){
+  @media (max-width:760px) and (prefers-reduced-motion:no-preference){
+    .st-list.st-run{animation:stScroll linear both;animation-timeline:scroll(root block);animation-range:0px 100000px}
+  }
 }
 /* the site's own dropdown (js/combobox.js), first used for the weeknight "Nights" picker: no native <select>. The button takes the
    height of the date field beside it, the arrow sits at its vertical centre; the list hangs under it, square like the fields */
