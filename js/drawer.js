@@ -1,6 +1,6 @@
 // The room drawer: the booking summary with a live total. Opens from the plan in the right column, sticky from the
 // heading's top line to the bottom of the screen; the wheel scrolls it first while it is on screen.
-import { $, $$, modal, modalOpen } from './site.js';
+import { $, $$ } from './site.js';
 import { ico } from './icons.js';
 import { roomById, TYP, FEATS, TR, W, rng, DOW, MON, eur, quote, ticketsAvailable, DIM, ROOMS, priceLine } from './data.js';
 import { selection, taken, onDates, setOpenRoom, flashStrip } from './rooms.js';
@@ -71,7 +71,7 @@ addEventListener('wheel', e => {
   if ((dy > 0 && drIn.scrollTop < max - 1) || (dy < 0 && drIn.scrollTop > 0)) drIn.scrollTop = Math.max(0, Math.min(max, drIn.scrollTop + dy));
   else scrollBy(0, dy);
 }, { passive: false });
-addEventListener('keydown', e => { if (e.key === 'Escape' && !modalOpen()) closeDr(); });
+addEventListener('keydown', e => { if (e.key === 'Escape') closeDr(); });
 
 function drawDr() {
   const r = roomById(open), mg = r.sleeps; ex.g = Math.min(ex.g, mg);
@@ -91,13 +91,13 @@ function drawDr() {
   <div class="sec"><h4>Spa extras</h4>${TR.map(t => `<div class="ln"><span>${t[1]}<small>€${t[2]}</small></span>${stp(t[0], 0, 4)}</div>`).join('')}</div>
   ${tOk ? `<div class="sec"><div class="ln"><span>Evening tickets for friends<small>€75 each · ${w.tix} left</small></span>${stp('tx', 0, Math.min(10, w.tix))}</div></div>` : ''}
   <div class="sec">${has ? `<div class="ln"><span>${q.baseText}</span><span>${eur(q.base)}</span></div>${q.spa ? `<div class="ln"><span>Spa extras</span><span>${eur(q.spa)}</span></div>` : ''}${q.tix ? `<div class="ln"><span>Evening tickets</span><span>${eur(q.tix)}</span></div>` : ''}` : ''}
-   <div class="total"><div><div class="small">Total</div><b>${has ? eur(q.total) : '—'}</b></div><button class="btn btn-p" id="resv" type="button">Reserve</button></div></div>
+   <div class="total"><div><div class="small">Total</div><b>${has ? eur(q.total) : '—'}</b></div><button class="btn btn-p" id="resv" type="button"${has ? ' disabled' : ''}>Reserve</button></div></div>
  </div>`;
   $('#drx').addEventListener('click', closeDr);
   $('#drx2').addEventListener('click', closeDr);
   $$('#drIn [data-go]').forEach(b => b.addEventListener('click', () => { if (b.dataset.go) openDr(b.dataset.go); }));
   $$('#drIn [data-s]').forEach(b => b.addEventListener('click', () => { ex[b.dataset.s] += +b.dataset.d; drawDr(); }));
-  $('#resv').addEventListener('click', () => { if (!has) { flashStrip(); return; } modal('reserve'); });
+  $('#resv').addEventListener('click', () => { if (!has) flashStrip(); });   // with dates chosen, Reserve is the final button: faded and inactive (demo)
 }
 onDates(() => { if (open) { if (taken(roomById(open))) closeDr(); else drawDr(); } });
 setOpenRoom(openDr);

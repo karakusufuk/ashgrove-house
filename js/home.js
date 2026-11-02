@@ -9,10 +9,12 @@ const root = document.documentElement;
 const V = '?v=20261028';
 
 /* ---------- the hero film runs once from afternoon to night; the blur grows over its last 2 s while the drone still flies, and the headline fades in with it ---------- */
-const phoneStill = () => matchMedia('(max-width:760px)').matches;   // phones: the night frame only, the 5 MB film is never fetched
-let ended = false, done = false;
+const PHONE = !!vid && vid.dataset.phone === '1';           // set by the script under the video (≤ 760 px at load): phones never fetch the 5 MB film
+const VM = '?v=20261102';
+let ended = false, done = false, ticking = false;
 const BLUR = 45, SCALE = .10;                               // 100 % blur: the house is no longer recognisable (the old 9 px was the 20 % level)
 const LEAD = 2;                                             // the blur grows over the last 2 s of the film, while the drone is still moving
+let fx = vid, now = () => vid.currentTime, dur = () => vid.duration;   // what the end blur follows: the film, or the frame sequence on a phone that refuses video
 function showEnd() {                                        // idempotent: the final state is never left again
   if (ended) return;
   ended = true;
@@ -20,22 +22,111 @@ function showEnd() {                                        // idempotent: the f
 }
 function tick() {
   if (done) return;
-  const d = vid.duration, x = d ? Math.min(1, Math.max(0, (vid.currentTime - (d - LEAD)) / LEAD)) : 0;
+  const d = dur(), x = d ? Math.min(1, Math.max(0, (now() - (d - LEAD)) / LEAD)) : 0;
   const k = Math.pow(x, 2.32);                              // 0 → 20 % at the middle of the last 2 s (blur 9 px), then 20 → 100 % before the film ends
-  if (x > 0) { vid.style.filter = `blur(${(BLUR * k).toFixed(2)}px)`; vid.style.transform = `scale(${(1 + SCALE * k).toFixed(4)})`; }
+  if (x > 0) { fx.style.filter = `blur(${(BLUR * k).toFixed(2)}px)`; fx.style.transform = `scale(${(1 + SCALE * k).toFixed(4)})`; }
   if (x >= .5) showEnd();                                   // the headline arrives together with the strongest part of the blur
-  if (x >= 1 || vid.ended) { done = true; showEnd(); vid.style.filter = vid.style.transform = ''; return; }
+  if (x >= 1 || (fx === vid && vid.ended)) { done = true; showEnd(); fx.style.filter = fx.style.transform = ''; return; }
   requestAnimationFrame(tick);
 }
-vid.addEventListener('playing', () => requestAnimationFrame(tick));
-vid.addEventListener('ended', () => { done = true; showEnd(); vid.style.filter = vid.style.transform = ''; });
+const startTick = () => { if (!ticking) { ticking = true; requestAnimationFrame(tick); } };
+vid.addEventListener('playing', startTick);
+vid.addEventListener('ended', () => { if (fx !== vid) return; done = true; showEnd(); vid.style.filter = vid.style.transform = ''; });
 /* the film starts only when it is completely in the browser's buffer, so it cannot stall; the intro curtain's loading line follows this
    download (and the curtain stays up until it is done), the other photo preloads wait for it, and a 25 s cap keeps a dead line from blocking the page. */
 const buffered = () => (vid.buffered.length ? vid.buffered.end(vid.buffered.length - 1) : 0);
-const wantFilm = !!vid && !reducedMotion() && !phoneStill();
+const wantFilm = !!vid && !reducedMotion();
 let filmDone = !wantFilm, filmFullRes; const filmFull = new Promise(r => { filmFullRes = () => { filmDone = true; r(true); }; });
-const filmProgress = () => (filmDone ? 1 : vid.duration ? Math.min(.99, buffered() / vid.duration) : 0);
+let phoneP = 0;                                             // phone: share of the phone film (and, if needed, the frame sequence) that has arrived
+const filmProgress = () => (filmDone ? 1 : PHONE ? Math.min(.99, phoneP) : vid.duration ? Math.min(.99, buffered() / vid.duration) : 0);
+/* phones (2 Nov): the same film cut to 960×540 (1.3 MB), fetched whole into memory before it plays, so the first frame is the afternoon
+   house and nothing can stall. iOS Safari does not buffer a whole film on its own, so it is fetched rather than preloaded. If the phone
+   refuses to play video without a tap (iOS Low Power Mode) or the film never moves, the same footage plays as 96 frames on a canvas. */
+let phoneMode = '', seq = null, phoneReadyRes;
+const phoneReady = new Promise(r => { phoneReadyRes = r; });
+const SEQ_N = 96, SEQ_FPS = 12;
+function loadSeq(onp) {
+  if (seq) return Promise.resolve(true);
+  const set = frame.clientWidth <= frame.clientHeight * .75 ? 'p' : 'w';   // p: the centre of the frame in portrait (480×640), w: the whole frame (640×360)
+  let got = 0;
+  return Promise.all(Array.from({ length: SEQ_N }, (_, i) => new Promise(res => {
+    const im = new Image();
+    const fin = ok => { onp(++got / SEQ_N); res(ok ? im : null); };
+    im.onload = () => (im.decode ? im.decode() : Promise.resolve()).then(() => fin(true), () => fin(true));
+    im.onerror = () => fin(false);
+    im.src = `images/hero-seq/${set}/${String(i + 1).padStart(3, '0')}.webp${VM}`;
+  }))).then(a => {
+    let last = a.find(Boolean);
+    if (!last) return false;
+    for (let i = 0; i < a.length; i++) { if (a[i]) last = a[i]; else a[i] = last; }   // a missing frame repeats its neighbour
+    seq = a;
+    return true;
+  });
+}
+async function phoneFilm() {
+  const cap = setTimeout(filmFullRes, 25000);               // a dead line never holds the curtain; the film still plays when it arrives
+  try {
+    const r = await fetch('images/hero-m.mp4' + VM);
+    if (!r.ok) throw new Error(r.status);
+    const n = +r.headers.get('content-length'), parts = [];
+    if (r.body && n) {
+      const rd = r.body.getReader();
+      let got = 0;
+      for (;;) { const { done: end, value } = await rd.read(); if (end) break; parts.push(value); got += value.length; phoneP = .85 * got / n; }
+    } else parts.push(await r.arrayBuffer());
+    vid.src = URL.createObjectURL(new Blob(parts, { type: 'video/mp4' }));
+    // may this phone play video without a tap? a muted start that is paused at once tells (the curtain still covers it)
+    phoneMode = await vid.play().then(() => { vid.pause(); try { vid.currentTime = 0; } catch (e) {} return 'film'; }, () => '');
+  } catch (e) {}
+  if (!phoneMode) phoneMode = (await loadSeq(f => { phoneP = .85 + .15 * f; })) ? 'seq' : 'none';
+  clearTimeout(cap);
+  filmFullRes();
+  phoneReadyRes();
+}
+function playSeq() {
+  const cv = document.createElement('canvas'), g = cv.getContext('2d');
+  cv.setAttribute('aria-hidden', 'true');
+  vid.after(cv);
+  const D = SEQ_N / SEQ_FPS, t0 = performance.now();
+  fx = cv; now = () => Math.min(D, (performance.now() - t0) / 1000); dur = () => D;
+  const draw = (im, a) => {                                 // object-fit: cover and object-position: 50% 18%, as the film
+    const W = cv.width, H = cv.height, s = Math.max(W / im.naturalWidth, H / im.naturalHeight), w = im.naturalWidth * s, h = im.naturalHeight * s;
+    g.globalAlpha = a;
+    g.drawImage(im, (W - w) * .5, (H - h) * .18, w, h);
+  };
+  (function paint() {
+    const r = Math.min(2, devicePixelRatio || 1), W = Math.round(cv.clientWidth * r), H = Math.round(cv.clientHeight * r);
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    const p = Math.min(SEQ_N - 1, now() * SEQ_FPS), i = Math.floor(p), k = p - i;
+    draw(seq[i], 1);
+    if (k > 0) draw(seq[i + 1], k);                         // 12 frames a second, each one dissolving into the next
+    if (!done) requestAnimationFrame(paint);
+  })();
+  startTick();
+}
+function endStill() {                                       // nothing can play: the night frame, blurred, with the headline
+  fx = vid;
+  vid.removeAttribute('src'); vid.load();
+  vid.poster = 'images/hero-end.jpg' + V;
+  showEnd();
+}
+async function playPhone() {
+  await phoneReady;
+  if (ended) return;
+  if (phoneMode === 'film') {
+    try { vid.currentTime = 0; } catch (e) {}
+    if (await vid.play().then(() => true, () => false)) {
+      await new Promise(r => setTimeout(r, 2500));
+      if (vid.currentTime > .2 || ended) return;            // the film is running
+    }
+    vid.pause();                                            // refused, or stuck on its first frame: the frame sequence takes over
+    phoneMode = (await loadSeq(() => {})) ? 'seq' : 'none';
+    vid.removeAttribute('src'); vid.load();
+  }
+  if (phoneMode === 'seq') playSeq(); else endStill();
+}
 if (!wantFilm) filmFullRes();
+else if (PHONE) phoneFilm();
 else {
   const t0 = performance.now();
   const iv = setInterval(() => {
@@ -46,14 +137,15 @@ else {
 const filmReady = filmFull;
 async function playHero() {
   if (!vid || ended) return;
-  if (reducedMotion() || phoneStill()) return;
+  if (reducedMotion()) return;
+  if (PHONE) return playPhone();
   await Promise.race([filmReady, new Promise(r => setTimeout(r, 20000))]);
   if (ended) return;
   try { vid.currentTime = 0; } catch (e) {}
   const p = vid.play();
   if (p && p.catch) p.catch(() => { vid.poster = 'images/hero-end.jpg' + V; showEnd(); });   // autoplay refused: show the night frame, blurred, with the headline
 }
-if (reducedMotion() || phoneStill()) {                      // no playback: the night frame is shown blurred, with the headline; the film is never fetched
+if (reducedMotion()) {                                     // no playback: the night frame is shown blurred, with the headline; the film is never fetched
   vid.poster = 'images/hero-end.jpg' + V;
   vid.preload = 'none';
   vid.querySelectorAll('source').forEach(s => s.remove());
@@ -160,6 +252,37 @@ story.style.height = `calc(${MOM.length * PER}vh + 100vh)`;
 /* ≤ 900 px: the same eight moments as a plain timeline (the pinned, one-step-per-scroll version needs a desktop-sized
    screen; on a phone it clipped the copy). CSS shows one or the other. */
 story.insertAdjacentHTML('beforeend', `<div class="st-list wrap"><div class="eyebrow">A Seisiún weekend, hour by hour</div><ol>${MOM.map(m => `<li><figure class="st-ph"><img src="images/${m.img}.jpg" alt="${m.title}" width="${DIM[m.img][0]}" height="${DIM[m.img][1]}" loading="lazy" decoding="async"></figure><div class="st-when"><b>${m.day}</b><span>${m.h}</span></div><h3 class="d">${m.title}</h3><p>${m.txt}</p></li>`).join('')}</ol></div>`);
+/* ≤ 760 px (2 Nov): the moments as a clock timeline. A faint, softly blurred clock (hour and minute hands, no numbers) stays at the
+   centre of the screen behind the copy while the section is on screen; as each moment's card reaches the centre the hands arrive at
+   its time. The hands only go forward and take the shortest forward way: the minute hand never makes an extra turn (21:00 → 09:00
+   leaves both hands where they are), the hour hand goes to the hour. Between two cards the hands follow the scroll position. */
+$('.st-list').insertAdjacentHTML('afterbegin', `<div class="st-clock" id="stClock" aria-hidden="true"><svg class="ck-face" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48.5"/>${Array.from({ length: 12 }, (_, i) => `<line x1="50" y1="${i % 3 ? 5.5 : 5}" x2="50" y2="${i % 3 ? 9.5 : 12}" transform="rotate(${i * 30} 50 50)"${i % 3 ? '' : ' class="q"'}/>`).join('')}</svg><i class="ck-h"></i><i class="ck-m"></i><b class="ck-pin"></b></div>`);
+const ck = $('#stClock'), ckH = $('.ck-h', ck), ckM = $('.ck-m', ck), stLis = $$('.st-list li');
+const ckOn = () => matchMedia('(max-width:760px)').matches;
+const CK_H = [], CK_M = [];                                 // the hands' angles at each moment, counted forward from Arrival
+MOM.forEach((m, i) => {
+  const [hh, mm] = m.h.split(':').map(Number), h = hh % 12 + mm / 60;
+  if (!i) { CK_H.push(h * 30); CK_M.push(mm * 6); return; }
+  const [ph, pm] = MOM[i - 1].h.split(':').map(Number), p = ph % 12 + pm / 60;
+  CK_H.push(CK_H[i - 1] + ((h - p) % 12 + 12) % 12 * 30);
+  CK_M.push(CK_M[i - 1] + ((mm - pm) % 60 + 60) % 60 * 6);
+});
+function clockStep() {
+  if (!ckOn()) return;
+  const mid = innerHeight / 2, D = ck.offsetHeight, s = story.getBoundingClientRect();
+  ck.classList.toggle('on', s.top <= mid - D / 2 && s.bottom >= mid + D / 2);   // shown only while the section fills the clock's place
+  const c = stLis.map(li => { const r = li.getBoundingClientRect(); return r.top + r.height / 2; });   // each card's centre on screen
+  let i = 0;
+  while (i < c.length - 1 && c[i + 1] <= mid) i++;
+  const f = i === c.length - 1 ? 0 : Math.min(1, Math.max(0, (mid - c[i]) / (c[i + 1] - c[i]))), e = f * f * (3 - 2 * f);
+  const j = Math.min(i + 1, c.length - 1);
+  ckH.style.transform = `rotate(${(CK_H[i] + (CK_H[j] - CK_H[i]) * e).toFixed(2)}deg)`;
+  ckM.style.transform = `rotate(${(CK_M[i] + (CK_M[j] - CK_M[i]) * e).toFixed(2)}deg)`;
+}
+let cks = 0;
+addEventListener('scroll', () => { if (!cks) { cks = 1; requestAnimationFrame(() => { clockStep(); cks = 0; }); } }, { passive: true });
+addEventListener('resize', clockStep);
+clockStep();
 let cur = -1, tlY = 190, tlS = 240;
 function layoutStory() {
   const h = its[0].querySelector('.d').offsetHeight; if (!h) return;

@@ -1,6 +1,5 @@
 // Booking stepper (Spa, Restaurant, Corporate): two columns, the "Your booking" summary on the left, one step at a time on the right.
 // Choosing an option moves on; Continue is the primary button; Back clears the value of the step it leaves and of the one it returns to.
-import { modal } from './site.js';
 import { days7, DOW, MON } from './data.js';
 
 export function stepper(root, cfg) {
@@ -18,12 +17,12 @@ export function stepper(root, cfg) {
    <div class="bk-r"><div class="prog" aria-hidden="true">${cfg.steps.map((x, i) => `<span class="${i <= st.i ? 'on' : ''}"></span>`).join('')}</div>
    <div class="prog-l">${cfg.steps.map((x, i) => `<span class="${i === st.i ? 'on' : ''}">${i + 1}. ${x.label}</span>`).join('')}</div>
    <div class="stepbox"><div class="step"><h3>${s.label}</h3><div id="sb"></div>
-   <div class="navs">${s.final ? `<button class="btn btn-p" id="gob" type="button">${cfg.action}</button>` : s.next ? `<button class="btn btn-p" id="gob" type="button">Continue</button>` : ''}${st.i > 0 ? `<button class="back" id="bk" type="button">Back</button>` : ''}</div></div></div></div></div>`;
+   <div class="navs">${s.final ? `<button class="btn btn-p" id="gob" type="button" disabled>${cfg.action}</button>` : s.next ? `<button class="btn btn-p" id="gob" type="button">Continue</button>` : ''}${st.i > 0 ? `<button class="back" id="bk" type="button">Back</button>` : ''}</div></div></div></div></div>`;
     s.render(root.querySelector('#sb'), val => { st.v[s.key] = val; st.i++; draw(); }, st);
     const bk = root.querySelector('#bk');
     if (bk) bk.addEventListener('click', () => { delete st.v[cfg.steps[st.i].key]; st.i--; delete st.v[cfg.steps[st.i].key]; draw(); });
     const g = root.querySelector('#gob');
-    if (g) g.addEventListener('click', () => { if (s.final) modal('book'); else { st.i++; draw(); } });
+    if (g && !s.final) g.addEventListener('click', () => { st.i++; draw(); });   // the final button is shown faded and does nothing (demo)
   }
   draw();
 }

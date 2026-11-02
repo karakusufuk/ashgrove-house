@@ -8,7 +8,7 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;paddin
 a{color:inherit}
 img{display:block;max-width:100%}
 figure{margin:0}
-:focus-visible{outline:2px solid var(--rose-d);outline-offset:3px}
+:focus-visible{outline:none}
 .wrap{max-width:var(--container);margin:0 auto;padding-left:max(var(--gutter),env(safe-area-inset-left,0px));padding-right:max(var(--gutter),env(safe-area-inset-right,0px))}
 .d{font-family:var(--head);font-weight:400;text-transform:uppercase;letter-spacing:.004em;line-height:.96;margin:0;white-space:nowrap}
 .eyebrow{font-size:14px;font-weight:600;color:var(--muted);margin:0 0 14px}
@@ -153,7 +153,7 @@ footer{background:var(--soft);padding-block:80px 40px;border-top:1px solid var(-
 .big{font-family:var(--sans);font-weight:800;font-size:72px;line-height:1;letter-spacing:-.02em}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:620px}
 .fields input{font:inherit;font-size:15px;padding:14px 16px;border:0;box-shadow:inset 0 0 0 1px var(--line);background:#fff;border-radius:0}
-.fields input:focus{outline:2px solid var(--rose-d);outline-offset:0}
+.fields input:focus{outline:none;box-shadow:inset 0 0 0 1px #c8c9c7}
 .fields .full{grid-column:1/-1}
 .navs{display:flex;gap:18px;margin-top:32px;align-items:center}
 .back{font-size:14px;font-weight:600;color:var(--muted);text-decoration:underline}
@@ -376,7 +376,9 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
 .hero-media{position:absolute;inset:0;overflow:hidden}
 .hero-media video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 18%;transform-origin:50% 50%}
 /* the end: js.home eases the blur in while the drone is still flying (0 → 20 % level, then 20 → 100 %, the house no longer recognisable); this is its final state */
-.is-ending .hero-media video{filter:blur(45px);transform:scale(1.10)}
+.is-ending .hero-media video,.is-ending .hero-media canvas{filter:blur(45px);transform:scale(1.10)}
+/* phones whose browser refuses video: the same footage as a frame sequence on a canvas over the film */
+.hero-media canvas{position:absolute;inset:0;display:block;width:100%;height:100%;transform-origin:50% 50%}
 /* film grain (moving) and a slight vignette, over the film only; the labels sit above (z-index 3) */
 .hero-fx{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .hero-fx::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 125% 115% at 50% 50%,rgba(0,0,0,0) 52%,rgba(0,0,0,.36) 100%),linear-gradient(rgba(255,160,80,.045),rgba(255,160,80,.045))}
@@ -755,3 +757,31 @@ figcaption small{display:block;font-weight:500;color:var(--muted);font-size:13px
   .card.open .ctog i{transform:translateY(2px) rotate(-135deg)}
 }
 @media (min-width:641px){.ctog{display:none}}
+
+/* ========== 2 Nov ========== */
+/* nothing looks selected unless it was chosen: no tap flash on touch screens, no focus ring (text fields darken their own border, above),
+   and the hero arrow keeps no grey after a tap on a touch screen */
+html{-webkit-tap-highlight-color:transparent}
+@media (hover:none){.hl-down:hover{background:#fff}}
+/* phones */
+/* story as a clock timeline: the cards hold day, time, title and copy, centred; a faint, softly blurred clock sits at the centre of
+   the screen behind them while the section is on screen, and home.js turns its hands to each card's time as the card reaches the centre */
+.st-clock{display:none}
+@media (max-width:760px){
+  .story{isolation:isolate}
+  .st-list .eyebrow{text-align:center}
+  .st-list ol{position:relative;z-index:1}
+  .st-list li,.st-list li:last-child{align-items:center;text-align:center;min-height:76svh;padding:24px 0}
+  .st-list .st-ph{display:none}
+  .st-when{justify-content:center}
+  .st-list p{margin:0 auto}
+  .st-clock{--ck:min(86vw,52svh,400px);display:block;position:fixed;left:50%;top:50%;z-index:0;width:var(--ck);height:var(--ck);margin:calc(var(--ck) / -2) 0 0 calc(var(--ck) / -2);color:var(--ink);opacity:0;transition:opacity .7s ease;pointer-events:none}
+  .st-clock.on{opacity:1}
+  .ck-face{position:absolute;inset:0;width:100%;height:100%;fill:rgba(27,28,30,.022);stroke:currentColor;stroke-opacity:.13;stroke-width:.7;stroke-linecap:round;filter:blur(1.2px)}
+  .ck-face line{stroke-width:1.1}
+  .ck-face line.q{stroke-width:1.6;stroke-opacity:.17}
+  .ck-h,.ck-m{position:absolute;left:50%;bottom:50%;border-radius:999px;background:currentColor;opacity:.14;transform-origin:50% 100%;will-change:transform;filter:blur(1.4px)}
+  .ck-h{width:calc(var(--ck) * .028);height:calc(var(--ck) * .25);margin-left:calc(var(--ck) * -.014);transform:rotate(120deg)}
+  .ck-m{width:calc(var(--ck) * .018);height:calc(var(--ck) * .38);margin-left:calc(var(--ck) * -.009);transform:rotate(0deg)}
+  .ck-pin{position:absolute;left:50%;top:50%;width:calc(var(--ck) * .045);height:calc(var(--ck) * .045);margin:calc(var(--ck) * -.0225) 0 0 calc(var(--ck) * -.0225);border-radius:50%;background:currentColor;opacity:.16;filter:blur(1.2px)}
+}

@@ -1,4 +1,4 @@
-// Shared behaviour for every page: icons, header logo line, concept modal, toast, reveal-on-enter.
+// Shared behaviour for every page: icons, header logo line, inert demo actions, toast, reveal-on-enter.
 import { paintIcons } from './icons.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
@@ -24,63 +24,16 @@ export function toast(t) {
   toast.t = setTimeout(() => toastEl.classList.remove('on'), 2300);
 }
 
-/* ---------- concept modal ---------- */
-const MT = {
-  call: 'In a live build, this would call the house.',
-  email: 'In a live build, this would open a new email to the house.',
-  map: 'In a live build, this would open directions to Ashgrove House.',
-  book: 'In a live build, this would send your request to the house and email you a confirmation.',
-  reserve: 'In a live build, this would take you to the booking summary to confirm and pay.',
-};
-let modalEl, returnFocus;
-function buildModal() {
-  modalEl = document.createElement('div');
-  modalEl.className = 'modal';
-  modalEl.id = 'modal';
-  modalEl.hidden = true;
-  modalEl.innerHTML = '<div class="modal-in" role="dialog" aria-modal="true" aria-labelledby="mtitle" aria-describedby="mtxt"><button class="x" id="mx" type="button" aria-label="Close">×</button><h3 id="mtitle">Concept site by Ufuk Karakuş</h3><p id="mtxt"></p><a href="#" id="mlink">See how it works →</a></div>';
-  document.body.appendChild(modalEl);
-  $('#mx', modalEl).addEventListener('click', closeModal);
-  modalEl.addEventListener('click', e => { if (e.target === modalEl) closeModal(); });
-  $('#mlink', modalEl).addEventListener('click', e => e.preventDefault());
-}
-export const modalOpen = () => !!modalEl && !modalEl.hidden;
-export function modal(k) {
-  if (!modalEl) buildModal();
-  returnFocus = document.activeElement;
-  $('#mtxt', modalEl).textContent = MT[k] || MT.book;
-  modalEl.hidden = false;
-  $('#mx', modalEl).focus();
-}
-export function closeModal() {
-  if (!modalOpen()) return;
-  modalEl.hidden = true;
-  if (returnFocus && returnFocus.focus && document.contains(returnFocus)) returnFocus.focus();
-  returnFocus = null;
-}
-// Esc closes the modal; Tab stays inside it while it is open
-addEventListener('keydown', e => {
-  if (!modalOpen()) return;
-  if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeModal(); }
-  else if (e.key === 'Tab') {
-    const f = $$('button, a[href]', modalEl);
-    const first = f[0], last = f[f.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    else if (!modalEl.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
-  }
-}, true);
-
-// phone / email / map / Reserve / Evening tickets / any form submit never do the real thing
+/* ---------- demo actions (2 Nov): phone, email, map, Evening tickets and any form submit do nothing at all ----------
+   No pop-up, no message, no call or mail app. The final button of each booking flow is shown faded and inactive instead
+   (stepper.js, drawer.js). */
 document.addEventListener('click', e => {
-  const m = e.target.closest('[data-modal]');
-  if (m) { e.preventDefault(); modal(m.dataset.modal); return; }
-  if (e.target.closest('[data-tix]')) { e.preventDefault(); modal('reserve'); }
+  if (e.target.closest('[data-modal], [data-tix]')) e.preventDefault();
 });
 document.addEventListener('keydown', e => {
-  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-modal][role="button"]')) { e.preventDefault(); modal(e.target.dataset.modal); }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-modal][role="button"]')) e.preventDefault();
 });
-document.addEventListener('submit', e => { e.preventDefault(); modal('book'); });
+document.addEventListener('submit', e => e.preventDefault());
 
 /* ---------- reveal: images scale .92 → 1 when they enter the viewport; nothing waits invisible ---------- */
 export function reveal() {
